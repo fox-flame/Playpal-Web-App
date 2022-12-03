@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const Axios = axios.create({
+const myAxios = axios.create({
   baseURL: "http://localhost:4000", //backend url to hit base
   headers: {
     Accept: "*/*",
@@ -9,4 +9,4 @@ const Axios = axios.create({
   timeout: 5000,
 });
 
-export default Axios;
+export default myAxios;

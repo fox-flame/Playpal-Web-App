@@ -20,28 +20,36 @@ import { UserContext } from "./context/user.context";
 import { GroundProvider } from "./context/grounds.context";
 
 function App() {
-  const { user } = useContext(UserContext);
+  const { currentUser } = useContext(UserContext);
 
   useEffect(() => {
     document.body.classList.add("g-sidenav-show", "bg-gray-100");
   }, []);
 
-  return user ? (
+  return (
     <Routes>
       <Route path="" element={<Navbar />}>
-        <Route index element={<p>Dashboard</p>} />
-        <Route
-          path="/requests"
-          element={
-            <GroundProvider>
-              <GroundsRequests />
-            </GroundProvider>
-          }
-        />
+        {
+          /*Add routes here that are available after authentication*/
+          currentUser ? (
+            <>
+              <Route index element={<p>Dashboard</p>} />
+              <Route path="/coaches" element={<p>Coaches</p>} />
+              <Route
+                path="/requests"
+                element={
+                  <GroundProvider>
+                    <GroundsRequests />
+                  </GroundProvider>
+                }
+              />
+            </>
+          ) : (
+            <Route index element={<LoginPage />} />
+          )
+        }
       </Route>
     </Routes>
-  ) : (
-    <LoginPage />
   );
 }
 

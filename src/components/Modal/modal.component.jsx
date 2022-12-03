@@ -30,15 +30,15 @@ const Modal = ({ index, ground }) => {
   const closeModal = () => {
     document.getElementById(`exampleModal${index}`).style.display = "none";
     document
-      .getElementsByClassName("modal-backdrop")[0]
+      .getElementsByclassName("modal-backdrop")[0]
       .classList.remove("show");
-    document.getElementsByClassName("modal-backdrop")[0].style.display = "none";
+    document.getElementsByclassName("modal-backdrop")[0].style.display = "none";
     document.body.classList.remove("modal-open");
     document.body.removeAttribute("style");
   };
   return (
     <div
-      class="modal fade"
+      className="modal fade"
       id={"exampleModal" + index}
       tabIndex="-1"
       aria-labelledby={"exampleModalLabel" + index}
@@ -46,34 +46,34 @@ const Modal = ({ index, ground }) => {
       data-backdrop="false"
       style={{ display: "none" }}
     >
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id={"exampleModalLabel" + index}>
+      <div className="modal-dialog modal-dialog-centered" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title" id={"exampleModalLabel" + index}>
               Ground Verification
             </h5>
             <button
               type="button"
-              class="btn-close"
+              className="btn-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             >
               <span aria-hidden="true">×</span>
             </button>
           </div>
-          <div class="modal-body">
-            <div class="d-flex justify-content-between">
-              <div class="d-flex px-2 py-1">
+          <div className="modal-body">
+            <div className="d-flex justify-content-between">
+              <div className="d-flex px-2 py-1">
                 <div>
                   <img
                     src={ground.owner["myPic"]}
-                    class="avatar avatar-sm me-3"
+                    className="avatar avatar-sm me-3"
                     alt="user1"
                   />
                 </div>
-                <div class="d-flex flex-column justify-content-center">
-                  <h6 class="mb-0 text-sm">{ground.owner["name"]}</h6>
-                  <p class="text-xs text-secondary mb-0">
+                <div className="d-flex flex-column justify-content-center">
+                  <h6 className="mb-0 text-sm">{ground.owner["name"]}</h6>
+                  <p className="text-xs text-secondary mb-0">
                     {ground.owner["phoneNumber"]}
                   </p>
                 </div>
@@ -86,42 +86,42 @@ const Modal = ({ index, ground }) => {
               </div>
             </div>
 
-            <div class="d-flex px-2 py-1 justify-content-between mt-4 border border-2 rounded">
-              <div class="d-flex flex-column justify-content-center">
-                <p class="mb-0 text-sm">Click to view Location</p>
+            <div className="d-flex px-2 py-1 justify-content-between mt-4 border border-2 rounded">
+              <div className="d-flex flex-column justify-content-center">
+                <p className="mb-0 text-sm">Click to view Location</p>
               </div>
-              <div class="d-flex flex-column justify-content-center">
+              <div className="d-flex flex-column justify-content-center">
                 <a
                   href="https://www.google.com/maps/dir/33.7146256,73.0759443/Rawalpindi+cricket+stadium+map/@33.6844265,73.0311983,13z/data=!3m1!4b1!4m9!4m8!1m1!4e1!1m5!1m1!1s0x38df95ca303fb4ab:0x36a43fbd8951b83b!2m2!1d73.0760641!2d33.6515516"
                   target="_blank"
-                  class="text-xs text-secondary mb-0"
+                  className="text-xs text-secondary mb-0"
                 >
                   Islamabad, H12
                 </a>
               </div>
             </div>
 
-            <h6 class="mb-2 mt-4">{ground.name}</h6>
+            <h6 className="mb-2 mt-4">{ground.name}</h6>
 
-            <div class="d-flex px-2 py-1 justify-content-between mt-4">
-              <div class="d-flex flex-column justify-content-center">
-                <p class="mb-0 text-sm">Ground Size</p>
+            <div className="d-flex px-2 py-1 justify-content-between mt-4">
+              <div className="d-flex flex-column justify-content-center">
+                <p className="mb-0 text-sm">Ground Size</p>
               </div>
-              <div class="d-flex flex-column justify-content-center">
-                <p class="text-xs text-secondary mb-0">10000</p>
+              <div className="d-flex flex-column justify-content-center">
+                <p className="text-xs text-secondary mb-0">10000</p>
               </div>
             </div>
           </div>
-          <div class="modal-footer">
+          <div className="modal-footer">
             <button
               type="button"
-              class="btn bg-gradient-secondary"
+              className="btn bg-gradient-secondary"
               data-bs-dismiss=""
             >
               REJECT
             </button>
             {verifyLoader == true ? (
-              <button type="button" class="btn bg-gradient-primary">
+              <button type="button" className="btn bg-gradient-primary">
                 <img
                   src={require("../../assets/img/loader2.gif")}
                   alt=""
@@ -132,7 +132,7 @@ const Modal = ({ index, ground }) => {
             ) : (
               <button
                 type="button"
-                class="btn bg-gradient-primary"
+                className="btn bg-gradient-primary"
                 onClick={() => {
                   handlerVerified(
                     ground.owner["groundID"],

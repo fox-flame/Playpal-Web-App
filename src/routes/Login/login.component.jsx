@@ -1,55 +1,104 @@
+import { useContext } from "react";
+import { redirect } from "react-router-dom";
+import { useState } from "react";
+import FormInput from "../../components/Input/input-field.component";
+import { UserContext } from "../../context/user.context";
+import { SignInAuthUserWithEmailAndPassword } from "../../utils/firebase/firebase.utils";
+
+const defaultFormFields = {
+  Email: "",
+  Password: "",
+};
+
 const LoginPage = () => {
+  const [formFields, setFormFields] = useState(defaultFormFields);
+  //destructuring form fields from default form fields
+  const { Email, Password } = formFields;
+  // using userContext
+  //const { setCurrentUser } = useContext(UserContext);
+  //input validator
+  const ShowError = (value) => {
+    document.getElementById("error-box").innerHTML = value;
+  };
+  //clear from function
+  const ResetForm = () => {
+    setFormFields(defaultFormFields);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      await SignInAuthUserWithEmailAndPassword(Email, Password);
+      // context to save user object
+      //setCurrentUser(user);
+
+      ResetForm();
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        ShowError("No Account associated with this email");
+      } else if (error.code === "auth/wrong-password") {
+        ShowError("Password doesn't exist");
+      }
+      console.log("Error loggin in ", error);
+    }
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target; // getting event and attached attributes and destructuring them
+    // console.log(event.target.value);
+    setFormFields({ ...formFields, [name]: value });
+  };
+
   return (
-    <main class="main-content  mt-0">
+    <main className="main-content  mt-0">
       <section>
-        <div class="page-header min-vh-75">
-          <div class="container">
-            <div class="row">
-              <div class="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
-                <div class="card card-plain mt-8">
-                  <div class="card-header pb-0 text-left bg-transparent">
-                    <h3 class="font-weight-bolder text-info text-gradient">
+        <div className="page-header min-vh-75">
+          <div className="container">
+            <div className="row">
+              <div className="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
+                <div className="card card-plain mt-8">
+                  <div className="card-header pb-0 text-left bg-transparent">
+                    <h3 className="font-weight-bolder text-info text-gradient">
                       Welcome back
                     </h3>
-                    <p class="mb-0">Enter your email and password to sign in</p>
+                    <p className="mb-0">
+                      Enter your email and password to sign in
+                    </p>
                   </div>
-                  <div class="card-body">
-                    <form role="form">
+                  <div className="card-body">
+                    <form onSubmit={(e) => handleSubmit(e)}>
                       <label>Email</label>
-                      <div class="mb-3">
-                        <input
+                      <div className="mb-3">
+                        <FormInput
                           type="email"
-                          class="form-control"
+                          className="form-control"
                           placeholder="Email"
                           aria-label="Email"
                           aria-describedby="email-addon"
+                          name="Email"
+                          onChange={handleChange}
+                          value={Email}
                         />
                       </div>
                       <label>Password</label>
-                      <div class="mb-3">
-                        <input
-                          type="email"
-                          class="form-control"
+                      <div className="mb-3">
+                        <FormInput
+                          type="password"
+                          className="form-control"
                           placeholder="Password"
                           aria-label="Password"
                           aria-describedby="password-addon"
+                          name="Password"
+                          onChange={handleChange}
+                          value={Password}
                         />
                       </div>
-                      <div class="form-check form-switch">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="rememberMe"
-                          checked=""
-                        />
-                        <label class="form-check-label" for="rememberMe">
-                          Remember me
-                        </label>
-                      </div>
-                      <div class="text-center">
+
+                      <div className="text-center">
                         <button
-                          type="button"
-                          class="btn bg-gradient-info w-100 mt-4 mb-0"
+                          type="submit"
+                          className="btn bg-gradient-info w-100 mt-4 mb-0"
                         >
                           Sign in
                         </button>
@@ -59,13 +108,12 @@ const LoginPage = () => {
                 </div>
               </div>
 
-              <div class="col-md-6">
-                <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
+              <div className="col-md-6">
+                <div className="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
                   <div
-                    class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6"
+                    className="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6"
                     style={{
-                      backgroundImage:
-                        `url('${require('../../assets/img/curved-images/curved-11.jpg')}')`,
+                      backgroundImage: `url('${require("../../assets/img/curved-images/curved-11.jpg")}')`,
                     }}
                   ></div>
                 </div>

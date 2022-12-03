@@ -1,8 +1,7 @@
-import axios from "axios";
-import Axios from "../axios/axiosSettings.ts";
+import myAxios from "../axios/axiosSettings.ts";
 
 export function getGroundsWithOwner() {
-  return axios.get("https://play-o.herokuapp.com/ground-and-owner");
+  return myAxios.get("/ground/ground-and-owner");
 }
 
 // export function markAsVerified(id, type, city) {
@@ -13,5 +12,5 @@ export function getGroundsWithOwner() {
 export function markAsRejected() {}
 
 export function markAsVerified(id, type, city) {
-  return Axios.patch(`/ground/verify?id=${id}&type=${type}&city=${city}`);
+  return myAxios.patch(`/ground/verify?id=${id}&type=${type}&city=${city}`);
 }
