@@ -8,7 +8,10 @@ import {
   Delete,
   Query,
   ValidationPipe,
+  Req,
+  Res,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { GroundService } from './ground.service';
 import { UpdateGroundDto } from './dto/update-ground.dto';
 import { GroundDTO } from './dto/ground.dto';
@@ -19,8 +22,8 @@ export class GroundController {
   constructor(private readonly groundService: GroundService) {}
 
   //Selects sportsType,city then add name,location,price,userID,
-  @Post()
-  async create(@Body() createGroundDto: GroundDTO) {
+  @Post('/register')
+  async create(@Body() createGroundDto: GroundDTO): Promise<any> {
     return await this.groundService.createGround(createGroundDto);
   }
 
@@ -29,9 +32,17 @@ export class GroundController {
     return this.groundService.findAll();
   }
 
+  @Get('ground-and-owner')
+  async groundsAndOwner(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<any> {
+    return await this.groundService.groundsAndOwner(req, res);
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.groundService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return this.groundService.findOne(id);
   }
 
   // @Patch(':id')

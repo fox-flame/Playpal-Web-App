@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { AuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
-import * as admin from 'firebase-admin';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   UserCredential,
+  onAuthStateChanged,
 } from 'firebase/auth';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import {
@@ -51,7 +51,7 @@ export class AuthService {
       console.warn('Error: ', error);
     }
   }
-  async Signup(authDto: AuthDto): Promise<void> {
+  async Signup(authDto: Omit<AuthDto, 'id'>): Promise<void> {
     try {
       const userCredential: UserCredential =
         await createUserWithEmailAndPassword(
@@ -60,8 +60,8 @@ export class AuthService {
           authDto.password,
         );
       if (userCredential) {
-        console.log('Found');
         const id: string = userCredential.user.uid;
+
         const docRef: DocumentReference = doc(
           this.firebaseService.adminCollection,
           id,
@@ -72,6 +72,11 @@ export class AuthService {
       console.warn('Error: ', error);
     }
   }
+  //observer / listener
+  onAuthStateChangedListener(callback) {
+    return onAuthStateChanged(this.firebaseService.auth, callback);
+  }
+
   findAll() {
     return `This action returns all auth`;
   }

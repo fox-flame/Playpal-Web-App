@@ -1,36 +1,33 @@
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 
 export class GroundDTO {
-  // [key: string]: GroundDataDTO;
   @IsString()
   name!: string;
+
   @IsString()
-  location!: string;
+  mapAddress!: string;
+
   @IsNumber()
-  price!: number;
+  bookingRate!: number;
+
   @IsString()
-  sportsType!: string;
+  sports!: string;
+
   @IsString()
   city!: string;
-}
 
-export class GroundDataDTO {
-  // @IsString()
-  // name!: string;
-  // @IsString()
-  // location!: string;
-  // @IsString()
-  // ownerId!: string;
-  // @IsBoolean()
-  // verified!: boolean;
-  // @IsNumber()
-  // price!: number;
-  // @IsString()
-  // status!: string;
-  // @IsString()
-  // sportsType!: string;
-  // @IsString()
-  // city!: string;
   @IsString()
-  name: string;
+  website: string;
+
+  @IsString()
+  openAt!: string;
+
+  @IsString()
+  closeAt!: string;
+
+  @IsString()
+  description!: string;
+
+  @IsString()
+  ownerID!: string;
 }
