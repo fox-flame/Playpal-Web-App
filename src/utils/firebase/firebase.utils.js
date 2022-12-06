@@ -97,15 +97,19 @@ export const createUserDocumentFromAuth = async (
     const { displayName, phoneNumber, email } = userAuth;
     const createdAt = new Date();
     try {
-      await setDoc(docRef, {
-        [userAuth.uid]: {
-          displayName,
-          phoneNumber,
-          email,
-          createdAt,
-          ...additionalInformation,
+      await setDoc(
+        docRef,
+        {
+          [userAuth.uid]: {
+            displayName,
+            phoneNumber,
+            email,
+            createdAt,
+            ...additionalInformation,
+          },
         },
-      }).then(() => console.log("user created"));
+        { merge: true }
+      ).then(() => console.log("user created"));
     } catch (error) {
       console.log("Error creating the user", error.message);
     }

@@ -11,24 +11,17 @@ export const UserContext = React.createContext({
 });
 export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [preLoading, setPreLoader] = useState(true);
-  // SignOutUser();
+
   useEffect(() => {
-    onAuthStateChangedListener((user) => {
+    const unsub = onAuthStateChangedListener((user) => {
       if (user) {
-        setPreLoader(false);
         setCurrentUser(user);
       } else {
         setCurrentUser(null);
       }
     });
-
-    // return unsub;
+    return unsub;
   }, []);
-  const value = { currentUser, setCurrentUser, preLoading, setPreLoader };
-  return (
-    <UserContext.Provider value={value}>
-      {value.preLoading ? <FirstLoader /> : children}
-    </UserContext.Provider>
-  );
+  const value = { currentUser, setCurrentUser };
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

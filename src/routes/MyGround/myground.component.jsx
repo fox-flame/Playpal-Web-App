@@ -1,18 +1,38 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import FormInput from "../../components/Input/input-field.component";
+import {
+  findGroundByID,
+  registerGround,
+} from "../../services/grounds.services";
+import { UserContext } from "../../context/user.context";
+import { useEffect } from "react";
+import FirstLoader from "../../components/startingLoader/firstLoader.component";
 
 const defaultFormFields = {
   name: "",
   mapAddress: "",
   sports: "",
   city: "",
-  bookingRate: "",
+  bookingRate: 0,
   website: "",
   openAt: "",
   closeAt: "",
   description: "",
+  ownerID: "",
 };
 const MyGround = () => {
+  const { currentUser } = useContext(UserContext);
+  const [noGround, setNoGround] = useState(false);
+  const [isVerified, setVerified] = useState();
+
+  useEffect(() => {
+    findGroundByID(currentUser.uid).then((res) => {
+      console.log(res.data);
+      if (Object.keys(res.data).length === 0) setNoGround(true);
+      else setVerified(res.data["verified"]);
+    });
+  }, []);
+
   const [formFields, setFormFields] = useState(defaultFormFields);
   const {
     name,
@@ -24,6 +44,7 @@ const MyGround = () => {
     openAt,
     closeAt,
     description,
+    ownerID,
   } = formFields;
 
   const ResetForm = () => {
@@ -33,39 +54,51 @@ const MyGround = () => {
   const handleChange = (event) => {
     const { name, value } = event.target; // getting event and attached attributes and destructuring them
     console.log(event.target.value);
-    setFormFields({ ...formFields, [name]: value });
+    setFormFields({ ...formFields, [name]: value, ownerID: currentUser.uid });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    try {
+      registerGround(formFields);
+      ResetForm();
+    } catch (error) {
+      console.log("Cannot submit data of grounds", error);
+    }
   };
 
   return (
     <div class="card">
       <div class="card-body">
-        <form encType="multipart/form-data">
-          <div>
-            <div class="row align-items-center">
-              <div class="col-6">
-                <h6 class="mb-0">No ground yet, Register now!</h6>
-              </div>
-              <FormInput
-                type={"file"}
-                id="groundImg"
-                style={{ position: "absolute", display: "none" }}
-                accept="image/png, image/jpeg"
-                max={3}
-                min={3}
-                multiple
-              />
+        {noGround ? (
+          <form onSubmit={handleSubmit} encType="multipart/form-data">
+            <div>
+              <div class="row align-items-center">
+                <div class="col-6">
+                  <h6 class="mb-0">No ground yet, Register now!</h6>
+                </div>
+                <FormInput
+                  type={"file"}
+                  id="groundImg"
+                  style={{ position: "absolute", display: "none" }}
+                  accept="image/png, image/jpeg"
+                  max={3}
+                  min={3}
+                  multiple
+                />
 
-              <div class="col-6 text-end">
-                <label
-                  for="groundImg"
-                  class="btn btn-sm bg-gradient-primary mb-0"
-                >
-                  + ADD IMAGES
-                </label>
+                <div class="col-6 text-end">
+                  <label
+                    for="groundImg"
+                    class="btn btn-sm bg-gradient-primary mb-0"
+                  >
+                    + ADD IMAGES
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-          {/* <div class="field">
+            {/* <div class="field">
             <h6 class="heading-small text-muted mb-4">Ground Images</h6>
             <div class="swiper mySwiper">
               <div class="swiper-wrapper">
@@ -106,117 +139,127 @@ const MyGround = () => {
             </div>
           </div> */}
 
-          <hr class="horizontal dark my-4" />
-          <h6 class="heading-small text-muted mb-4">Ground Information</h6>
-          <div>
-            <div class="row">
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">Name of ground</label>
-                  <FormInput
-                    type="text"
-                    class="form-control"
-                    placeholder="Type name of your ground"
-                    name="name"
-                    value={name}
-                    onChange={handleChange}
-                    required
-                  />
+            <hr class="horizontal dark my-4" />
+            <h6 class="heading-small text-muted mb-4">Ground Information</h6>
+            <div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">Name of ground</label>
+                    <input
+                      type={"hidden"}
+                      class="form-control"
+                      name="ownerID"
+                      value={ownerID}
+                      onChange={handleChange}
+                      required
+                    />
+                    <FormInput
+                      type="text"
+                      class="form-control"
+                      placeholder="Type name of your ground"
+                      name="name"
+                      value={name}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">Map Address</label>
+                    <FormInput
+                      type={"url"}
+                      class="form-control"
+                      placeholder="Copy Address from Map"
+                      name="mapAddress"
+                      value={mapAddress}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
                 </div>
               </div>
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">Map Address</label>
-                  <FormInput
-                    type={"url"}
-                    class="form-control"
-                    placeholder="Copy Address from Map"
-                    name="mapAddress"
-                    value={mapAddress}
-                    onChange={handleChange}
-                    required
-                  />
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">
+                      Select Primary Sports
+                    </label>
+                    <select
+                      class="form-select"
+                      aria-label="Default select"
+                      name="sports"
+                      value={sports}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value={""} hidden>
+                        E.g Cricket
+                      </option>
+                      <option value="cricket">Cricket</option>
+                      <option value="football">Football</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">City</label>
+                    <select
+                      class="form-select"
+                      aria-label="Default select"
+                      name="city"
+                      value={city}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value={""} hidden>
+                        Select city
+                      </option>
+                      <option value="islamabad">Islamabad</option>
+                      <option value="rawalpindi">Rawalpindi</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">
+                      Booking rate (Price)
+                    </label>
+                    <FormInput
+                      type={"number"}
+                      class="form-control"
+                      placeholder="Enter booking rate"
+                      name="bookingRate"
+                      value={bookingRate}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">Website (Optional)</label>
+                    <FormInput
+                      type="text"
+                      class="form-control"
+                      placeholder="Website link, if any"
+                      name="website"
+                      value={website}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">
-                    Select Primary Sports
-                  </label>
-                  <select
-                    class="form-select"
-                    aria-label="Default select"
-                    name="sports"
-                    value={sports}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value={""} hidden>
-                      E.g Cricket
-                    </option>
-                    <option value="cricket">Cricket</option>
-                    <option value="football">Football</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">City</label>
-                  <select
-                    class="form-select"
-                    aria-label="Default select"
-                    name="city"
-                    value={city}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value={""} hidden>
-                      Select city
-                    </option>
-                    <option value="islamabad">Islamabad</option>
-                    <option value="rawalpindi">Rawalpindi</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">Booking rate (Price)</label>
-                  <FormInput
-                    type={"number"}
-                    class="form-control"
-                    placeholder="Enter booking rate"
-                    name="bookingRate"
-                    value={bookingRate}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">Website (Optional)</label>
-                  <FormInput
-                    type="text"
-                    class="form-control"
-                    placeholder="Website link, if any"
-                    name="website"
-                    value={website}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
 
-          {/* <hr class="horizontal dark my-4" />
+            {/* <hr class="horizontal dark my-4" />
 
           <h6 class="heading-small text-muted mb-4">Ground Settings</h6> */}
-          <div>
-            {/* <div class="row">
+            <div>
+              {/* <div class="row">
               <div class="col-lg-6">
                 <div class="form-group">
                   <label class="form-control-label">Status</label>
@@ -247,64 +290,78 @@ const MyGround = () => {
                 </div>
               </div>
             </div> */}
+              <hr class="horizontal dark my-4" />
+              <h6 class="text-muted mb-4">Open Hours</h6>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">From</label>
+                    <FormInput
+                      type="time"
+                      class="form-control"
+                      name="openAt"
+                      value={openAt}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label">To</label>
+                    <FormInput
+                      type="time"
+                      class="form-control"
+                      name="closeAt"
+                      value={closeAt}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
             <hr class="horizontal dark my-4" />
-            <h6 class="text-muted mb-4">Open Hours</h6>
-            <div class="row">
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">From</label>
-                  <FormInput
-                    type="time"
-                    class="form-control"
-                    name="openAt"
-                    value={openAt}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-              <div class="col-lg-6">
-                <div class="form-group">
-                  <label class="form-control-label">To</label>
-                  <FormInput
-                    type="time"
-                    class="form-control"
-                    name="closeAt"
-                    value={closeAt}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <hr class="horizontal dark my-4" />
 
-          <h6 class="heading-small text-muted mb-4">About Ground</h6>
-          <div>
-            <div class="form-group">
-              <label class="form-control-label">Description</label>
-              <textarea
-                rows="4"
-                class="form-control"
-                placeholder="A few words about ground ..."
-                name="description"
-                value={description}
-                onChange={handleChange}
-                required
-              ></textarea>
+            <h6 class="heading-small text-muted mb-4">About Ground</h6>
+            <div>
+              <div class="form-group">
+                <label class="form-control-label">Description</label>
+                <textarea
+                  rows="4"
+                  class="form-control"
+                  placeholder="A few words about ground ..."
+                  name="description"
+                  value={description}
+                  onChange={handleChange}
+                  required
+                ></textarea>
+              </div>
             </div>
+            <div className="text-end">
+              <button type="button" class="btn bg-gradient-secondary">
+                Reset
+              </button>
+              &nbsp;&nbsp;
+              <button type="submit" class="btn bg-gradient-primary">
+                Save changes
+              </button>
+            </div>
+          </form>
+        ) : isVerified ? (
+          <p>You're verified now</p>
+        ) : isVerified === false ? (
+          <div className="text-center pt-6">
+            <img src={require("../../assets/img/verified.png")} width="200px" />
+            <p className="pt-2 text-center">
+              You're all set, it may take a business day
+              <br />
+              to complete your verification!
+            </p>
           </div>
-          <div className="text-end">
-            <button type="button" class="btn bg-gradient-secondary">
-              Reset
-            </button>
-            &nbsp;&nbsp;
-            <button type="submit" class="btn bg-gradient-primary">
-              Save changes
-            </button>
-          </div>
-        </form>
+        ) : (
+          <FirstLoader />
+        )}
       </div>
     </div>
   );

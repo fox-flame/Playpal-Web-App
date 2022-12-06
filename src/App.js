@@ -20,6 +20,7 @@ import Signup from "./routes/Signup/signup.component";
 import { UserContext } from "./context/user.context";
 import { GroundProvider } from "./context/grounds.context";
 import MyGround from "./routes/MyGround/myground.component";
+import FirstLoader from "./components/startingLoader/firstLoader.component";
 
 function App() {
   const { currentUser } = useContext(UserContext);
