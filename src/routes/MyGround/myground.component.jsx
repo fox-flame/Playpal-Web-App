@@ -24,15 +24,22 @@ const defaultFormFields = {
 const MyGround = () => {
   const { currentUser } = useContext(UserContext);
   const [noGround, setNoGround] = useState(false);
+  const [myGround, setMyGround] = useState({});
   const [isVerified, setVerified] = useState();
   const [date, setDate] = useState(new Date());
 
   useEffect(() => {
     findGroundByID(currentUser.uid).then((res) => {
-      console.log(res.data);
       if (Object.keys(res.data).length === 0) {
         setNoGround(true);
-      } else setVerified(res.data["verified"]);
+      } else {
+        Object.keys(res.data).map((key) => {
+          setVerified(res.data[key]["verified"]);
+        });
+        if (res.data) {
+          Object.keys(res.data).map((key) => setMyGround(res.data[key]));
+        }
+      }
     });
   }, []);
 
@@ -52,6 +59,10 @@ const MyGround = () => {
 
   const ResetForm = () => {
     setFormFields(defaultFormFields);
+  };
+
+  const handleGroundChange = (event) => {
+    event.preventDefault();
   };
 
   const handleChange = (event) => {
@@ -424,7 +435,7 @@ const MyGround = () => {
                           type="time"
                           class="form-control"
                           name="openAt"
-                          value={openAt}
+                          value={myGround["openAt"]}
                           onChange={handleChange}
                           required
                         />
@@ -437,7 +448,7 @@ const MyGround = () => {
                           type="time"
                           class="form-control"
                           name="closeAt"
-                          value={closeAt}
+                          value={myGround["closeAt"]}
                           onChange={handleChange}
                           required
                         />
