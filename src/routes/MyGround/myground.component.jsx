@@ -7,6 +7,7 @@ import {
 import { UserContext } from "../../context/user.context";
 import { useEffect } from "react";
 import FirstLoader from "../../components/startingLoader/firstLoader.component";
+import { Calendar } from "react-calendar";
 
 const defaultFormFields = {
   name: "",
@@ -24,12 +25,14 @@ const MyGround = () => {
   const { currentUser } = useContext(UserContext);
   const [noGround, setNoGround] = useState(false);
   const [isVerified, setVerified] = useState();
+  const [date, setDate] = useState(new Date());
 
   useEffect(() => {
     findGroundByID(currentUser.uid).then((res) => {
       console.log(res.data);
-      if (Object.keys(res.data).length === 0) setNoGround(true);
-      else setVerified(res.data["verified"]);
+      if (Object.keys(res.data).length === 0) {
+        setNoGround(true);
+      } else setVerified(res.data["verified"]);
     });
   }, []);
 
@@ -349,7 +352,115 @@ const MyGround = () => {
             </div>
           </form>
         ) : isVerified ? (
-          <p>You're verified now</p>
+          <>
+            <div class="row align-items-center">
+              <div class="col-6">
+                <h6 class="mb-0">Ground Settings</h6>
+              </div>
+
+              <div class="col-6 text-end">
+                <label class="text-muted">{new Date().toDateString()}</label>
+              </div>
+            </div>
+            <hr class="horizontal dark my-4" />
+            <div class="d-flex align-items-center flex-wrap">
+              <Calendar onChange={setDate} value={date} />
+
+              <div className="card-body">
+                <h6 class="heading-small text-muted mb-4">
+                  Availability settings
+                </h6>
+
+                <form>
+                  <div class="row">
+                    <div class="col col-lg-6">
+                      <div class="form-group">
+                        <label class="form-control-label">
+                          Set booking status
+                        </label>
+                        <select
+                          class="form-select"
+                          aria-label="Default select"
+                          name="sports"
+                          value={sports}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value={""} hidden>
+                            Open
+                          </option>
+                          <option value="open">Open</option>
+                          <option value="close">Close</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col col-lg-6">
+                      <div class="form-group">
+                        <label class="form-control-label">Any reason</label>
+                        <select
+                          class="form-select"
+                          aria-label="Default select"
+                          name="sports"
+                          value={sports}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value={""} hidden>
+                            Booking
+                          </option>
+                          <option value="open">Booking</option>
+                          <option value="close">Close</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <hr class="horizontal dark my-4" />
+
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="form-group">
+                        <label class="form-control-label">From</label>
+                        <FormInput
+                          type="time"
+                          class="form-control"
+                          name="openAt"
+                          value={openAt}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="form-group">
+                        <label class="form-control-label">To</label>
+                        <FormInput
+                          type="time"
+                          class="form-control"
+                          name="closeAt"
+                          value={closeAt}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-end">
+                    {/* <button type="button" class="btn bg-gradient-secondary">
+                      Reset
+                    </button>
+                    &nbsp;&nbsp; */}
+                    <button
+                      type="submit"
+                      class="btn bg-gradient-primary w-100"
+                      style={{ height: "50px" }}
+                    >
+                      Save changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </>
         ) : isVerified === false ? (
           <div className="text-center pt-6">
             <img src={require("../../assets/img/verified.png")} width="200px" />
