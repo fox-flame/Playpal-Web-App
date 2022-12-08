@@ -41,8 +41,8 @@ export class GroundController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.groundService.findOne(id);
+  async findOne(@Param('id') id: string): Promise<any> {
+    return await this.groundService.findOne(id);
   }
 
   // @Patch(':id')

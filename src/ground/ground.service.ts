@@ -101,7 +101,7 @@ export class GroundService {
     return `This action returns all ground`;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string):Promise<any> {
     var groundsList = {};
     const db = admin.firestore();
     const groundRef = db.collection('grounds');
@@ -135,15 +135,16 @@ export class GroundService {
             Object.assign(groundsList, { [key]: arr[i][key] });
           }
         }
-
+    
         for (const key in groundsList) {
           if (id === groundsList[key]['ownerID']) {
             //  console.log(groundsList[key]['verified']);
-            Object.assign(Found, { verified: groundsList[key]['verified'] });
+            Object.assign(Found, { [key]: groundsList[key] });
             break;
           }
         }
       });
+      console.log(Found);
       return Found;
     } catch (error) {
       console.log('Error ', error);
