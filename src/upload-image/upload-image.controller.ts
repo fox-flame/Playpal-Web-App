@@ -10,9 +10,8 @@ import {
   UploadedFiles,
 } from '@nestjs/common';
 import { UploadImageService } from './upload-image.service';
-import { UpdateUploadImageDto } from './dto/update-upload-image.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import path from 'path';
+import { uploadDTO } from './dto/upload.dto';
 
 @Controller('upload-image')
 export class UploadImageController {
@@ -20,9 +19,8 @@ export class UploadImageController {
 
   @Post()
   @UseInterceptors(FilesInterceptor('grounds[]', 10))
-  upload(@UploadedFiles() files) {
-    console.log('My images are ', files);
-    return this.uploadImageService.uploadMultiImg(files);
+  async upload(@UploadedFiles() files, @Body() uploadDTO: uploadDTO) {
+    return await this.uploadImageService.uploadMultiImg(files, uploadDTO);
   }
 
   @Get()
@@ -33,14 +31,6 @@ export class UploadImageController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.uploadImageService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUploadImageDto: UpdateUploadImageDto,
-  ) {
-    return this.uploadImageService.update(+id, updateUploadImageDto);
   }
 
   @Delete(':id')
