@@ -3,11 +3,13 @@ import FormInput from "../../components/Input/input-field.component";
 import {
   findGroundByID,
   registerGround,
+  uploadImages,
 } from "../../services/grounds.services";
 import { UserContext } from "../../context/user.context";
 import { useEffect } from "react";
 import FirstLoader from "../../components/startingLoader/firstLoader.component";
 import { Calendar } from "react-calendar";
+import Viewer from "../../components/imageViewer/viewer.component";
 
 const defaultFormFields = {
   name: "",
@@ -27,6 +29,8 @@ const MyGround = () => {
   const [myGround, setMyGround] = useState({});
   const [isVerified, setVerified] = useState();
   const [date, setDate] = useState(new Date());
+  const [images, setImages] = useState([]);
+  const [imageURLS, setImageURLs] = useState([]);
 
   useEffect(() => {
     findGroundByID(currentUser.uid).then((res) => {
@@ -43,6 +47,17 @@ const MyGround = () => {
     });
   }, []);
 
+  useEffect(() => {
+    if (images.length < 1) return;
+    const newImageUrls = [];
+    images.forEach((image) => newImageUrls.push(URL.createObjectURL(image)));
+    setImageURLs(newImageUrls);
+  }, [images]);
+
+  function onImageChange(e) {
+    setImages([...e.target.files]);
+  }
+
   const [formFields, setFormFields] = useState(defaultFormFields);
   const {
     name,
@@ -58,7 +73,9 @@ const MyGround = () => {
   } = formFields;
 
   const ResetForm = () => {
+    window.location.reload();
     setFormFields(defaultFormFields);
+    setImageURLs([]);
   };
 
   const handleGroundChange = (event) => {
@@ -75,7 +92,14 @@ const MyGround = () => {
     event.preventDefault();
 
     try {
+      if (images.length < 1) return;
+
+      let formData = new FormData();
+      images.forEach((img) => formData.append("grounds[]", img));
+      formData.append("userID", currentUser.uid);
+
       registerGround(formFields);
+      uploadImages(formData);
       ResetForm();
     } catch (error) {
       console.log("Cannot submit data of grounds", error);
@@ -98,7 +122,9 @@ const MyGround = () => {
                   style={{ position: "absolute", display: "none" }}
                   accept="image/png, image/jpeg"
                   max={3}
-                  min={3}
+                  min={1}
+                  onChange={onImageChange}
+                  required
                   multiple
                 />
 
@@ -112,6 +138,7 @@ const MyGround = () => {
                 </div>
               </div>
             </div>
+            {<Viewer images={imageURLS} />}
             {/* <div class="field">
             <h6 class="heading-small text-muted mb-4">Ground Images</h6>
             <div class="swiper mySwiper">
@@ -366,7 +393,7 @@ const MyGround = () => {
           <>
             <div class="row align-items-center">
               <div class="col-6">
-                <h6 class="mb-0">Ground Settings</h6>
+                <h6 class="mb-0">Booking Settings</h6>
               </div>
 
               <div class="col-6 text-end">
@@ -378,9 +405,9 @@ const MyGround = () => {
               <Calendar onChange={setDate} value={date} />
 
               <div className="card-body">
-                <h6 class="heading-small text-muted mb-4">
+                {/* <h6 class="heading-small text-muted mb-4">
                   Availability settings
-                </h6>
+                </h6> */}
 
                 <form>
                   <div class="row">
@@ -426,7 +453,9 @@ const MyGround = () => {
                     </div>
                   </div>
                   <hr class="horizontal dark my-4" />
-
+                  <p class="text-muted mb-4 text-center">
+                    Max 2 bookings per day
+                  </p>
                   <div class="row">
                     <div class="col-lg-6">
                       <div class="form-group">
@@ -450,6 +479,36 @@ const MyGround = () => {
                           name="closeAt"
                           value={myGround["closeAt"]}
                           onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="form-group">
+                        <label class="form-control-label">From</label>
+                        <FormInput
+                          type="time"
+                          class="form-control"
+                          name="openAt"
+                          value={myGround["openAt"]}
+                          onChange={handleChange}
+                          disabled
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="form-group">
+                        <label class="form-control-label">To</label>
+                        <FormInput
+                          type="time"
+                          class="form-control"
+                          name="closeAt"
+                          value={myGround["closeAt"]}
+                          onChange={handleChange}
+                          disabled
                           required
                         />
                       </div>

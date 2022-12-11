@@ -31,6 +31,14 @@ export function registerGround(data = {}) {
   });
 }
 
+export function uploadImages(payload) {
+  return myAxios.post("/upload-image", payload, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+}
+
 export function findGroundByID(id) {
   return myAxios.get(`/ground/${id}`);
 }
