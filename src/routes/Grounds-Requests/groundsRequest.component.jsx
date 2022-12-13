@@ -20,6 +20,7 @@ const GroundsRequests = () => {
       .catch((error) => {
         setLoading(false);
         set404(true);
+        console.log(error);
       });
   }, []);
 
@@ -35,7 +36,7 @@ const GroundsRequests = () => {
               <img src={require("../../assets/img/loader.gif")} />
               <p>Hold on..</p>
             </div>
-          ) : notFound ? (
+          ) : notFound || groundsRequest.length === 0 ? (
             <div className="m-auto text-center">
               <img src={require("../../assets/img/404.png")} width="200px" />
               <p className="pt-2">Seems like there is no ground request</p>
