@@ -22,6 +22,7 @@ import { GroundProvider } from "./context/grounds.context";
 import MyGround from "./routes/MyGround/myground.component";
 import FirstLoader from "./components/startingLoader/firstLoader.component";
 import "./assets/css/myCalender.css";
+import Settings from "./routes/Settings/settings.component";
 
 function App() {
   const { currentUser } = useContext(UserContext);
@@ -38,6 +39,7 @@ function App() {
           currentUser ? (
             <>
               <Route index element={<p>Dashboard</p>} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/my-ground" element={<MyGround />} />
               <Route
                 path="/requests"

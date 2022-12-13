@@ -3,7 +3,7 @@ import { getGroundsWithOwner } from "../../services/grounds.services";
 import Modal from "../../components/Modal/modal.component";
 import { GroundContext } from "../../context/grounds.context";
 
-const GroundsRequests = () => {
+const BookingsRequests = () => {
   const { groundsRequest, setRequest } = useContext(GroundContext);
   const [notFound, set404] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -46,73 +46,104 @@ const GroundsRequests = () => {
                 <table className="table align-items-center mb-0">
                   <thead>
                     <tr>
-                      <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                         PlayPals
                       </th>
-                      <th className="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                        Ground Name
+                      <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                        Role
                       </th>
-                      <th className="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                        Location
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                        Status
                       </th>
-                      <th className="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                        Date
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                        Booking
                       </th>
-                      <th className="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                        Price
+                      </th>
+                      <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                         Action
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {groundsRequest.map((ground, index) => (
-                      <tr key={index}>
+                      <tr>
                         <td>
-                          <div className="d-flex px-2 py-1">
+                          <div class="d-flex px-2 py-1">
                             <div>
                               <img
-                                src={ground.owner["myPic"]}
-                                className="avatar avatar-sm me-3"
+                                src="../assets/img/team-2.jpg"
+                                class="avatar avatar-sm me-3"
                                 alt="user1"
                               />
                             </div>
-                            <div className="d-flex flex-column justify-content-center">
-                              <h6 className="mb-0 text-sm">
-                                {ground.owner["name"]}
-                              </h6>
-                              <p className="text-xs text-secondary mb-0">
-                                {ground.owner["phoneNumber"]}
+                            <div class="d-flex flex-column justify-content-center">
+                              <h6 class="mb-0 text-sm">John Michael</h6>
+                              <p class="text-xs text-secondary mb-0">
+                                john@google.com
                               </p>
                             </div>
                           </div>
                         </td>
                         <td>
-                          <p className="text-xs font-weight-bold mb-0">
-                            {ground.name}
-                          </p>
+                          <p class="text-xs font-weight-bold mb-0">Coach</p>
+                          <p class="text-xs text-secondary mb-0">Football</p>
                         </td>
-                        <td className="align-middle text-center text-sm">
-                          <a href="" className="text-xs text-secondary mb-0">
-                            {ground.location}
-                          </a>
+                        <td class="align-middle text-center text-sm">
+                          <span class="badge badge-sm bg-gradient-success">
+                            Pending
+                          </span>
                         </td>
-                        <td className="align-middle text-center">
-                          <span className="text-secondary text-xs font-weight-bold">
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">
                             23/04/18
                           </span>
                         </td>
-
-                        <td classNameName="d-flex justify-content-center align-items-center">
-                          <button
-                            type="button"
-                            className="btn bg-gradient-primary"
-                            data-bs-toggle="modal"
-                            data-bs-target={"#exampleModal" + index}
+                        <td class="align-middle">
+                          <a
+                            href="javascript:;"
+                            class="font-weight-bold text-sm"
+                            data-toggle="tooltip"
+                            data-original-title="Edit user"
                           >
-                            Verify
-                          </button>
+                            rs 6000
+                          </a>
+                        </td>
 
-                          {/*modal*/}
-                          <Modal ground={ground} index={index} />
+                        <td>
+                          <div class="dropdown">
+                            <button
+                              class="btn bg-gradient-primary dropdown-toggle"
+                              type="button"
+                              id="dropdownMenuButton"
+                              data-bs-toggle="dropdown"
+                              aria-expanded="false"
+                            >
+                              Action
+                            </button>
+                            <ul
+                              class="dropdown-menu"
+                              aria-labelledby="dropdownMenuButton"
+                              style=""
+                            >
+                              <li>
+                                <a class="dropdown-item" href="#">
+                                  Accept
+                                </a>
+                              </li>
+                              <li>
+                                <a class="dropdown-item" href="#">
+                                  Reject
+                                </a>
+                              </li>
+                              <li>
+                                <a class="dropdown-item" href="#">
+                                  Remove
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -126,4 +157,4 @@ const GroundsRequests = () => {
     </div>
   );
 };
-export default GroundsRequests;
+export default BookingsRequests;

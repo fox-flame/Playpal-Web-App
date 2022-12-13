@@ -59,11 +59,14 @@ const Navbar = () => {
                 <Navlink name={"Dashboard"} url={""} exact={true}>
                   <HomeIcon />
                 </Navlink>
+                <Navlink name={"Booking Requests"} url={"/requests"}>
+                  <GroundsIcon />
+                </Navlink>
                 <Navlink name={"Booking Settings"} url={"/my-ground"}>
                   <CoachIcon />
                 </Navlink>
-                <Navlink name={"Booking Requests"} url={"/requests"}>
-                  <GroundsIcon />
+                <Navlink name={"Settings"} url={"/settings"}>
+                  <HomeIcon />
                 </Navlink>
               </>
             )}

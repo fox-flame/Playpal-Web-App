@@ -1,7 +1,9 @@
 import { useState, useContext } from "react";
 import FormInput from "../../components/Input/input-field.component";
 import {
+  createBooking,
   findGroundByID,
+  isSlot,
   registerGround,
   uploadImages,
 } from "../../services/grounds.services";
@@ -10,6 +12,7 @@ import { useEffect } from "react";
 import FirstLoader from "../../components/startingLoader/firstLoader.component";
 import { Calendar } from "react-calendar";
 import Viewer from "../../components/imageViewer/viewer.component";
+import * as moment from "moment";
 
 const defaultFormFields = {
   name: "",
@@ -23,6 +26,13 @@ const defaultFormFields = {
   description: "",
   ownerID: "",
 };
+const defaultBookingFields = {
+  status: "",
+  start1: "", //start time for slot 1 and so on..
+  close1: "",
+  start2: "",
+  close2: "",
+};
 const MyGround = () => {
   const { currentUser } = useContext(UserContext);
   const [noGround, setNoGround] = useState(false);
@@ -31,8 +41,15 @@ const MyGround = () => {
   const [date, setDate] = useState(new Date());
   const [images, setImages] = useState([]);
   const [imageURLS, setImageURLs] = useState([]);
+  const [bookingFields, setBookingFields] = useState(defaultBookingFields);
+  const [formFields, setFormFields] = useState(defaultFormFields);
+  const [groundID, setGroundID] = useState("");
+  const [slots, setSlots] = useState([]);
+  const [isSlotCreated, setCreatedSlot] = useState(null);
+  // if Slot is not created, then create ground in bookings documents
 
   useEffect(() => {
+    // console.log(date.getDate(), " ", date.getMonth(), " ", date.getFullYear());
     findGroundByID(currentUser.uid).then((res) => {
       if (Object.keys(res.data).length === 0) {
         setNoGround(true);
@@ -41,11 +58,28 @@ const MyGround = () => {
           setVerified(res.data[key]["verified"]);
         });
         if (res.data) {
-          Object.keys(res.data).map((key) => setMyGround(res.data[key]));
+          Object.keys(res.data).map((key) => {
+            setMyGround(res.data[key]);
+            setGroundID(key);
+          });
         }
       }
     });
   }, []);
+
+  useEffect(() => {
+    setSlots(getTimeStops(myGround["openAt"], myGround["closeAt"], 2)); //dividing time into slots and set into state
+    if (slots.length > 0)
+      setBookingFields({
+        ...bookingFields,
+        start1: slots[0],
+        close1: slots[1],
+        start2: slots[1],
+        close2: slots[2],
+      });
+    //checking, if user has created a slot for booking
+    isSlot(groundID).then((res) => setCreatedSlot(res.data));
+  }, [myGround]);
 
   useEffect(() => {
     if (images.length < 1) return;
@@ -54,11 +88,31 @@ const MyGround = () => {
     setImageURLs(newImageUrls);
   }, [images]);
 
+  // function to divide time of range into no of slots
+  function getTimeStops(start, end, slots) {
+    var startTime = moment(start, "HH:mm");
+    var endTime = moment(end, "HH:mm");
+
+    if (endTime.isBefore(startTime)) {
+      endTime.add(1, "day");
+    }
+
+    var timeStops = [];
+    const duration = moment.duration(endTime.diff(startTime));
+    const hours = duration.asHours();
+    console.log("Total hours in this limit is ", hours);
+
+    while (startTime <= endTime) {
+      timeStops.push(new moment(startTime).format("HH:mm"));
+      startTime.add(hours / slots, "hours");
+    }
+    return timeStops;
+  }
+
   function onImageChange(e) {
     setImages([...e.target.files]);
   }
 
-  const [formFields, setFormFields] = useState(defaultFormFields);
   const {
     name,
     city,
@@ -71,15 +125,39 @@ const MyGround = () => {
     description,
     ownerID,
   } = formFields;
-
+  const { start1, close1, start2, close2, status } = bookingFields;
   const ResetForm = () => {
     window.location.reload();
     setFormFields(defaultFormFields);
     setImageURLs([]);
   };
 
-  const handleGroundChange = (event) => {
+  const handleBookingSettings = (event) => {
     event.preventDefault();
+
+    const { name, value } = event.target;
+
+    // console.log(event.target.value);
+    setBookingFields({ ...bookingFields, [name]: value });
+  };
+  const handleBookingSubmit = (event) => {
+    event.preventDefault();
+
+    try {
+      if (!isSlotCreated) {
+        createBooking({
+          groundID: groundID,
+          start1: start1,
+          close1: close1,
+          start2: start2,
+          close2: close2,
+        }).then((res) => console.log(res));
+      } else {
+        //update slot
+      }
+    } catch (error) {
+      console.log("Error creating booking ", error);
+    }
   };
 
   const handleChange = (event) => {
@@ -409,7 +487,7 @@ const MyGround = () => {
                   Availability settings
                 </h6> */}
 
-                <form>
+                <form onSubmit={handleBookingSubmit}>
                   <div class="row">
                     <div class="col col-lg-6">
                       <div class="form-group">
@@ -419,9 +497,9 @@ const MyGround = () => {
                         <select
                           class="form-select"
                           aria-label="Default select"
-                          name="sports"
-                          value={sports}
-                          onChange={handleChange}
+                          name="status"
+                          value={status}
+                          onChange={handleBookingSettings}
                           required
                         >
                           <option value={""} hidden>
@@ -432,7 +510,7 @@ const MyGround = () => {
                         </select>
                       </div>
                     </div>
-                    <div class="col col-lg-6">
+                    {/* <div class="col col-lg-6">
                       <div class="form-group">
                         <label class="form-control-label">Any reason</label>
                         <select
@@ -450,11 +528,12 @@ const MyGround = () => {
                           <option value="close">Close</option>
                         </select>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
+
                   <hr class="horizontal dark my-4" />
                   <p class="text-muted mb-4 text-center">
-                    Max 2 bookings per day
+                    Set available timings
                   </p>
                   <div class="row">
                     <div class="col-lg-6">
@@ -463,9 +542,9 @@ const MyGround = () => {
                         <FormInput
                           type="time"
                           class="form-control"
-                          name="openAt"
-                          value={myGround["openAt"]}
-                          onChange={handleChange}
+                          name="start1"
+                          value={start1}
+                          onChange={handleBookingSettings}
                           required
                         />
                       </div>
@@ -476,9 +555,9 @@ const MyGround = () => {
                         <FormInput
                           type="time"
                           class="form-control"
-                          name="closeAt"
-                          value={myGround["closeAt"]}
-                          onChange={handleChange}
+                          name="close1"
+                          value={close1}
+                          onChange={handleBookingSettings}
                           required
                         />
                       </div>
@@ -491,9 +570,9 @@ const MyGround = () => {
                         <FormInput
                           type="time"
                           class="form-control"
-                          name="openAt"
-                          value={myGround["openAt"]}
-                          onChange={handleChange}
+                          name="start2"
+                          value={start2}
+                          onChange={handleBookingSettings}
                           disabled
                           required
                         />
@@ -505,9 +584,9 @@ const MyGround = () => {
                         <FormInput
                           type="time"
                           class="form-control"
-                          name="closeAt"
-                          value={myGround["closeAt"]}
-                          onChange={handleChange}
+                          name="close2"
+                          value={close2}
+                          onChange={handleBookingSettings}
                           disabled
                           required
                         />
@@ -524,7 +603,7 @@ const MyGround = () => {
                       class="btn bg-gradient-primary w-100"
                       style={{ height: "50px" }}
                     >
-                      Save changes
+                      Create slots
                     </button>
                   </div>
                 </form>

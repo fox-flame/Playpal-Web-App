@@ -52,3 +52,11 @@ export function markAsRejected() {}
 export function markAsVerified(id, type, city) {
   return myAxios.patch(`/ground/verify?id=${id}&type=${type}&city=${city}`);
 }
+
+export function isSlot(id) {
+  return myAxios.get(`/booking/${id}`);
+}
+
+export function createBooking(payload) {
+  return myAxios.post("/booking", payload);
+}
