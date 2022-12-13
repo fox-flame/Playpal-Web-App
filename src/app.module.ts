@@ -6,6 +6,7 @@ import { GroundModule } from './ground/ground.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadImageModule } from './upload-image/upload-image.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UploadImageModule } from './upload-image/upload-image.module';
     UserModule,
     AuthModule,
     UploadImageModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
