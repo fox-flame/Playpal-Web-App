@@ -3,9 +3,12 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import * as admin from 'firebase-admin';
 import { BookGroundDTO } from './dto/book-ground-dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class BookingService {
+  constructor(private userService: UserService) {}
+
   async create(createBookingDto: CreateBookingDto): Promise<any> {
     const { groundID, start1, close1, start2, close2 } = createBookingDto;
 
@@ -69,8 +72,49 @@ Book a ground
     }
   }
 
-  async findAll(): Promise<any> {
-    return `This action returns all booking`;
+  /**
+   * 
+   * @param id of ground
+   * @returns all bookings of that ground
+   */
+  async findAll(id: string): Promise<any> {
+    try {
+      const db = admin.firestore();
+      let users = [];
+      return await db
+        .collection('bookings')
+        .doc('6idYckzA4ZSAPld1hWsi')
+        .get()
+        .then(async (snapshot) => {
+          var g = snapshot.data()[id];
+          let keys = Object.keys(g).filter((k) => k !== 'slots'); //all dates objects with users
+
+          for (let i = 0; i < keys.length; i++) {
+            let bookingSlot = g[keys[i]];
+            let userObj = {};
+
+            for (const [userID, value] of Object.entries(bookingSlot)) {
+              //fetch users data by id
+              let user = await this.userService.findUserByID(userID);
+              //Add data in userObj with keys[i] which is date
+              if (Object.keys(user).length > 0) {
+                //key-value pair 
+                userObj[keys[i]] = {
+                  [userID.toString()]: {
+                    ...user,
+                    bookedSlotID: value['bookedSlotID'],
+                  },
+                };
+              }
+            }
+            //after adding all users in respective dates, push into array
+            users.push(userObj);
+          }
+          return users;
+        });
+    } catch (error) {
+      console.log('Error finding bookings ', error);
+    }
   }
 
   // To find ground in bookings by id

@@ -24,13 +24,34 @@ export class UserService {
         .then((res) => {
           const data = Object.entries(res.data());
           for (const d of data) {
-            
           }
         });
     } catch (error) {}
   }
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findUserByID(id: string): Promise<any> {
+    //    .where('Document ID', 'in', ['coaches', 'player'])
+    try {
+      const db = admin.firestore();
+      let user = {};
+      await db
+        .collection('users')
+        .get()
+        .then((snapshot) =>
+          snapshot.docs.map((doc) => {
+            for (const key in doc.data()) {
+              for (const userID in doc.data()[key]) {
+                if (id === userID) {
+                  user = doc.data()[key][id];
+                  break;
+                }
+              }
+            }
+          }),
+        );
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

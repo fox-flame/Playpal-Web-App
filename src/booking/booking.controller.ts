@@ -17,18 +17,24 @@ export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
   @Post()
-  async createBooking(@Body() createBookingDto: CreateBookingDto) :Promise<any>{
+  async createBooking(
+    @Body() createBookingDto: CreateBookingDto,
+  ): Promise<any> {
     return await this.bookingService.create(createBookingDto);
   }
 
   @Post('book')
-  async bookAGround(@Body() bookGroundDto:BookGroundDTO): Promise<any>{
+  async bookAGround(@Body() bookGroundDto: BookGroundDTO): Promise<any> {
     return await this.bookingService.bookAGround(bookGroundDto);
   }
-
-  @Get()
-  async getBookings():Promise<any> {
-    return await this.bookingService.findAll();
+  /**
+   *
+   * @param gid
+   * @returns Bookings
+   */
+  @Get(':id')
+  async getBookings(@Param('id') gid: string): Promise<any> {
+    return await this.bookingService.findAll(gid);
   }
 
   @Get(':id')
