@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { getGroundsWithOwner } from "../../services/grounds.services";
-import Modal from "../../components/Modal/modal.component";
 import { GroundContext } from "../../context/grounds.context";
+import { BookingContext } from "../../context/bookings.context";
 
 const BookingsRequests = () => {
   const { groundsRequest, setRequest } = useContext(GroundContext);
