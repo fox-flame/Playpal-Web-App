@@ -39,11 +39,9 @@ export class UserService {
         .then((snapshot) =>
           snapshot.docs.map((doc) => {
             for (const key in doc.data()) {
-              for (const userID in doc.data()[key]) {
-                if (id === userID) {
-                  user = doc.data()[key][id];
-                  break;
-                }
+              if (id === key) {
+                user = doc.data()[key];
+                break;
               }
             }
           }),

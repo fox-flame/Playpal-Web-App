@@ -1,6 +1,7 @@
 import * as AWS from 'aws-sdk';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
 
 @Injectable()
 export class UploadImageService {
@@ -44,6 +45,37 @@ export class UploadImageService {
       for (let i = 0; i < numFiles; i++) {
         this.read(images[i], uploadDTO);
       }
+    }
+  }
+
+  async getGroundImages(id: string, res: Response): Promise<any> {
+    try {
+      var imgURLS = [];
+      var s3 = new AWS.S3();
+      const params = {
+        Bucket: 'groundimgs',
+        Delimiter: '',
+        Prefix: 'owners/' + id,
+      };
+      await s3.listObjectsV2(params, (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          for (let content of data.Contents) {
+            // console.log(content.Key);
+            let params = {
+              Bucket: 'groundimgs',
+              Key: content.Key,
+              Expires: 10000,
+            };
+            let url = s3.getSignedUrl('getObject', params);
+            imgURLS.push(url.toString());
+          }
+          res.send(imgURLS);
+        }
+      });
+    } catch (error) {
+      console.log(error);
     }
   }
 
