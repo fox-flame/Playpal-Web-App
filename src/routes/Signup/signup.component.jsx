@@ -21,6 +21,7 @@ const Signup = () => {
     formFields;
 
   const ResetForm = () => {
+    navigate("/my-ground");
     setFormFields(defaultFormFields);
   };
 

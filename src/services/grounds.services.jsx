@@ -39,6 +39,10 @@ export function uploadImages(payload) {
   });
 }
 
+export function getGroundImages(id) {
+  return myAxios.get(`/upload-image/groundImgs/${id}`);
+}
+
 export function findGroundByID(id) {
   return myAxios.get(`/ground/${id}`);
 }

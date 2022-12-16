@@ -8,6 +8,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  updateProfile,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -85,7 +86,13 @@ export const createUserDocumentFromAuth = async (
   userAuth,
   additionalInformation = {}
 ) => {
+  updateProfile(userAuth, {
+    displayName: additionalInformation["displayName"],
+  });
+  //
+
   // a reference document containing database location, collection and user id
+
   //const userDocRef = doc(db, "users", userAuth.uid);
   const docRef = doc(db, "users", "ground-owner");
 
@@ -96,6 +103,7 @@ export const createUserDocumentFromAuth = async (
     console.log("Document exists");
     const { displayName, phoneNumber, email } = userAuth;
     const createdAt = new Date();
+
     try {
       await setDoc(
         docRef,
@@ -109,7 +117,9 @@ export const createUserDocumentFromAuth = async (
           },
         },
         { merge: true }
-      ).then(() => console.log("user created"));
+      ).then(() => {
+        console.log("user created");
+      });
     } catch (error) {
       console.log("Error creating the user", error.message);
     }

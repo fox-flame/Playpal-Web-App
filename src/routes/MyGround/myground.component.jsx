@@ -34,7 +34,7 @@ const defaultBookingFields = {
   close2: "",
 };
 const MyGround = () => {
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, setHaveVerifiedGround } = useContext(UserContext);
   const [noGround, setNoGround] = useState(false);
   const [myGround, setMyGround] = useState({});
   const [isVerified, setVerified] = useState();

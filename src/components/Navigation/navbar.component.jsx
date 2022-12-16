@@ -59,6 +59,7 @@ const Navbar = () => {
                 <Navlink name={"Dashboard"} url={""} exact={true}>
                   <HomeIcon />
                 </Navlink>
+
                 <Navlink name={"Booking Requests"} url={"/requests"}>
                   <GroundsIcon />
                 </Navlink>
@@ -82,7 +83,7 @@ const Navbar = () => {
           >
             <div className="container-fluid py-1 px-3">
               <nav aria-label="breadcrumb">
-                <ol className="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+                {/* <ol className="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
                   <li className="breadcrumb-item text-sm">
                     <a className="opacity-5 text-dark" href="javascript:;">
                       Pages
@@ -94,9 +95,9 @@ const Navbar = () => {
                   >
                     Grounds
                   </li>
-                </ol>
+                </ol> */}
                 <h6 className="font-weight-bolder mb-0">
-                  Welcome, Syed Hamza Habib
+                  Welcome, {currentUser.displayName}
                 </h6>
               </nav>
               <div

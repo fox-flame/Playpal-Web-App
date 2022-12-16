@@ -22,6 +22,9 @@ export const UserProvider = ({ children }) => {
     });
     return unsub;
   }, []);
-  const value = { currentUser, setCurrentUser };
+  const value = {
+    currentUser,
+    setCurrentUser,
+  };
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

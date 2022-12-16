@@ -1,8 +1,5 @@
-import { useContext } from "react";
-import { redirect } from "react-router-dom";
 import { useState } from "react";
 import FormInput from "../../components/Input/input-field.component";
-import { UserContext } from "../../context/user.context";
 import { SignInAuthUserWithEmailAndPassword } from "../../utils/firebase/firebase.utils";
 
 const defaultFormFields = {
@@ -14,8 +11,7 @@ const LoginPage = () => {
   const [formFields, setFormFields] = useState(defaultFormFields);
   //destructuring form fields from default form fields
   const { Email, Password } = formFields;
-  // using userContext
-  //const { setCurrentUser } = useContext(UserContext);
+
   //input validator
   const ShowError = (value) => {
     document.getElementById("error-box").innerHTML = value;
@@ -30,8 +26,6 @@ const LoginPage = () => {
 
     try {
       await SignInAuthUserWithEmailAndPassword(Email, Password);
-      // context to save user object
-      //setCurrentUser(user);
 
       ResetForm();
     } catch (error) {

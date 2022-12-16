@@ -23,13 +23,15 @@ import MyGround from "./routes/MyGround/myground.component";
 import FirstLoader from "./components/startingLoader/firstLoader.component";
 import "./assets/css/myCalender.css";
 import Settings from "./routes/Settings/settings.component";
+import Dashboard from "./routes/Dashboard/dashboard.component";
 
 function App() {
   const { currentUser } = useContext(UserContext);
 
   useEffect(() => {
     document.body.classList.add("g-sidenav-show", "bg-gray-100");
-  }, []);
+    console.log(currentUser);
+  }, [currentUser]);
 
   return (
     <Routes>
@@ -38,7 +40,7 @@ function App() {
           /*Add routes here that are available after authentication*/
           currentUser ? (
             <>
-              <Route index element={<p>Dashboard</p>} />
+              <Route index element={<Dashboard />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-ground" element={<MyGround />} />
               <Route
