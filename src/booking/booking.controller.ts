@@ -10,6 +10,7 @@ import {
 import { BookingService } from './booking.service';
 import { BookGroundDTO } from './dto/book-ground-dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { SlotDTO } from './dto/slot-dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 
 @Controller('booking')
@@ -29,17 +30,22 @@ export class BookingController {
   }
   /**
    *
-   * @param gid
-   * @returns Bookings
+   * @param gid ground id
+   * @returns Returns all bookings associated with that ground
    */
-  @Get(':id')
+  @Get('ground/:id')
   async getBookings(@Param('id') gid: string): Promise<any> {
     return await this.bookingService.findAll(gid);
   }
 
-  @Get(':id')
+  @Get('slot/:id')
   async isSlot(@Param('id') id: string): Promise<Boolean> {
     return await this.bookingService.findOne(id);
+  }
+
+  @Get('slots')
+  async findAvailableSlots(@Body() slotsDTO: SlotDTO): Promise<any> {
+    return await this.bookingService.findAvailableSlots(slotsDTO);
   }
 
   @Patch(':id')

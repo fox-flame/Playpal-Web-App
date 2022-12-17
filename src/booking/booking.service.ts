@@ -4,6 +4,7 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 import * as admin from 'firebase-admin';
 import { BookGroundDTO } from './dto/book-ground-dto';
 import { UserService } from 'src/user/user.service';
+import { SlotDTO } from './dto/slot-dto';
 
 @Injectable()
 export class BookingService {
@@ -46,34 +47,115 @@ Book a ground
     try {
       const { bookedSlot, groundID, userID, dates } = bookGroundDto;
       const db = admin.firestore();
+      //check before if slot is booked
+      //if in that date, user is there, check his slots, add new slot in bookedslot
+      await db
+        .collection('bookings')
+        .doc('6idYckzA4ZSAPld1hWsi')
+        .get()
+        .then(async (snapshot) => {
+          var grounds = snapshot.data();
+          for (const [gid, allDates] of Object.entries(grounds)) {
+            if (gid === groundID) {
+              console.log('ground id matched');
+              for (const [date, users] of Object.entries(allDates)) {
+                if (date !== 'slots' && dates.includes(date)) {
+                  //check if in date, user exists
+                  if (Object.keys(grounds[gid][date]).includes(userID)) {
+                    //now merge selected slot for user
+                    const params = `${gid}.${date}.${userID}.bookedSlotID`;
+
+                    await db
+                      .collection('bookings')
+                      .doc('6idYckzA4ZSAPld1hWsi')
+                      .update({
+                        [params]:
+                          admin.firestore.FieldValue.arrayUnion(bookedSlot),
+                      });
+                    break;
+                  }
+                  //if user not exists,create user and add in date
+                  else {
+                    await db
+                      .collection('bookings')
+                      .doc('6idYckzA4ZSAPld1hWsi')
+                      .set(
+                        {
+                          [gid]: {
+                            [date]: {
+                              [userID]: {
+                                bookedSlotID: [bookedSlot],
+                                bookedAt: new Date(),
+                              },
+                            },
+                          },
+                        },
+                        { merge: true },
+                      );
+                    break;
+                  }
+                } //if date is not even created
+                else {
+                  console.log('no date present');
+                  dates.forEach(async (newDate) => {
+                    console.log(newDate);
+                    if (
+                      Object.entries(allDates).find(
+                        (d) => d.toString() !== newDate,
+                      )
+                    ) {
+                      await db
+                        .collection('bookings')
+                        .doc('6idYckzA4ZSAPld1hWsi')
+                        .set(
+                          {
+                            [gid]: {
+                              [newDate]: {
+                                [userID]: {
+                                  bookedSlotID: [bookedSlot],
+                                  bookedAt: new Date(),
+                                },
+                              },
+                            },
+                          },
+                          { merge: true },
+                        );
+                    }
+                  });
+                  break;
+                }
+              }
+            }
+          }
+        });
 
       //dd-mm-yy objects, user can select multiple dates []
-      //iterate from dates array and create objects
-      for (const ddmmyyyy of dates) {
-        await db
-          .collection('bookings')
-          .doc('6idYckzA4ZSAPld1hWsi')
-          .set(
-            {
-              [groundID]: {
-                [ddmmyyyy]: {
-                  [userID]: {
-                    bookedSlotID: bookedSlot,
-                    bookedAt: new Date(),
-                  },
-                },
-              },
-            },
-            { merge: true },
-          );
-      }
+      // //iterate from dates array and create objects
+      // for (const ddmmyyyy of dates) {
+      //   await db
+      //     .collection('bookings')
+      //     .doc('6idYckzA4ZSAPld1hWsi')
+      //     .set(
+      //       {
+      //         [groundID]: {
+      //           [ddmmyyyy]: {
+      //             [userID]: {
+      //               bookedSlotID: bookedSlot,
+      //               bookedAt: new Date(),
+      //             },
+      //           },
+      //         },
+      //       },
+      //       { merge: true },
+      //     );
+      // }
     } catch (error) {
       console.log('Error booking ground ', error);
     }
   }
 
   /**
-   * 
+   *
    * @param id of ground
    * @returns all bookings of that ground
    */
@@ -98,7 +180,7 @@ Book a ground
               let user = await this.userService.findUserByID(userID);
               //Add data in userObj with keys[i] which is date
               if (Object.keys(user).length > 0) {
-                //key-value pair 
+                //key-value pair
                 userObj[keys[i]] = {
                   [userID.toString()]: {
                     ...user,
@@ -139,6 +221,41 @@ Book a ground
       return flag;
     } catch (error) {
       console.log(error);
+    }
+  }
+  /**
+   *
+   * @param slotsDTO - having ground id and date
+   * @returns check slots on respective date.
+   */
+  async findAvailableSlots(slotsDTO: SlotDTO): Promise<any> {
+    try {
+      const db = admin.firestore();
+      const bookedSlots = [];
+      const { date, groundID } = slotsDTO;
+
+      await db
+        .collection('bookings')
+        .doc('6idYckzA4ZSAPld1hWsi')
+        .get()
+        .then((snapshot) => {
+          for (const [key, value] of Object.entries(snapshot.data())) {
+            //  console.log(key); //ground id
+            for (const [key1, value1] of Object.entries(value)) {
+              if (key1 !== 'slots' && key1 === date) {
+                for (const [key2, value2] of Object.entries(value[key1])) {
+                  console.log(key2);
+                  bookedSlots.push(value2['bookedSlotID']);
+                }
+                // bookedSlots.push(...value2['bookedSlotID']);
+                break;
+              }
+            }
+          }
+        });
+      console.log(bookedSlots);
+    } catch (error) {
+      console.log('Error booking slots ', error);
     }
   }
 
