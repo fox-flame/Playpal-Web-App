@@ -157,11 +157,18 @@ Book a ground
   /**
    *
    * @param id of ground
-   * @returns all bookings of that ground
+   * @returns all bookings of that ground - current bookings and future
    */
   async findAll(id: string): Promise<any> {
     try {
       const db = admin.firestore();
+      let date = new Date();
+      let currentDate = date.getDate();
+      let currentMonth = date.getMonth();
+      let currentYear = date.getFullYear();
+
+      // check current and future bookings
+      // check current date, month and year
       let users = [];
       return await db
         .collection('bookings')
@@ -174,23 +181,29 @@ Book a ground
           for (let i = 0; i < keys.length; i++) {
             let bookingSlot = g[keys[i]];
             let userObj = {};
-
-            for (const [userID, value] of Object.entries(bookingSlot)) {
-              //fetch users data by id
-              let user = await this.userService.findUserByID(userID);
-              //Add data in userObj with keys[i] which is date
-              if (Object.keys(user).length > 0) {
-                //key-value pair
-                userObj[keys[i]] = {
-                  [userID.toString()]: {
-                    ...user,
-                    bookedSlotID: value['bookedSlotID'],
-                  },
-                };
+            let dateArray = keys[i].split('-'); // splitting eg. 11-08-2022
+            if (
+              parseInt(dateArray[0]) >= currentDate &&
+              parseInt(dateArray[1]) >= currentMonth &&
+              parseInt(dateArray[2]) >= currentYear
+            ) {
+              for (const [userID, value] of Object.entries(bookingSlot)) {
+                //fetch users data by id
+                let user = await this.userService.findUserByID(userID);
+                //Add data in userObj with keys[i] which is date
+                if (Object.keys(user).length > 0) {
+                  //key-value pair
+                  userObj[keys[i]] = {
+                    [userID.toString()]: {
+                      ...user,
+                      bookedSlotID: value['bookedSlotID'],
+                    },
+                  };
+                }
               }
+              //after adding all users in respective dates, push into array
+              users.push(userObj);
             }
-            //after adding all users in respective dates, push into array
-            users.push(userObj);
           }
           return users;
         });

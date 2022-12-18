@@ -38,32 +38,50 @@ export class GroundService {
   async groundsAndOwner(req: Request, res: Response): Promise<any> {
     const db = admin.firestore();
     var groundsList = {};
+    var arr = [];
+    var bookableGrounds = [];
     const groundsRef = db.collection('grounds');
 
     try {
-      groundsRef.get().then((snapshot) => {
+      //checking if grounds started booking, getting their ids
+      await db
+        .collection('bookings')
+        .doc('6idYckzA4ZSAPld1hWsi')
+        .get()
+        .then((snapshot) => {
+          bookableGrounds = Object.keys(snapshot.data());
+        });
+
+      await groundsRef.get().then((snapshot) => {
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         /////////////////////This will get every ground of every location////////////////////////////////////////
-        const arr = data
-          .map(
-            (
-              ground, //return cities names
-            ) =>
-              Object.keys(ground)
-                .filter((value) => value !== 'id')
-                .map((cityName) => {
-                  let keys = Object.keys(ground[cityName]);
-                  keys.map((key) => {
-                    ground[cityName][key]['sports'] = ground.id;
-                    ground[cityName][key]['city'] = cityName;
+        data.map(
+          (
+            ground, //return cities names
+          ) =>
+            Object.keys(ground)
+              .filter((value) => value !== 'id')
+              .map((cityName) => {
+                let keys = Object.keys(ground[cityName]);
+                //check if keys matches with bookable grounds
+                keys.forEach((gid) => {
+                  bookableGrounds.forEach((bid) => {
+                    if (gid === bid) {
+                      console.log('matches');
+                      // keys.map((key) => {
+                        ground[cityName][gid]['sports'] = ground.id;
+                        ground[cityName][gid]['city'] = cityName;
+                      // });
+                      arr.push({ [gid]: ground[cityName][gid] });
+                    }
                   });
-                  return ground[cityName];
-                }),
-          )
-          .flat(); //flat merges nested arrays into single array
+                });
+              }),
+        );
+        console.log(arr);
         //  console.log(Object.keys(arr[0])[0]);
         for (let i = 0; i < arr.length; i++) {
           for (const key in arr[i]) {
@@ -101,7 +119,7 @@ export class GroundService {
     return `This action returns all ground`;
   }
 
-  async findOne(id: string):Promise<any> {
+  async findOne(id: string): Promise<any> {
     var groundsList = {};
     const db = admin.firestore();
     const groundRef = db.collection('grounds');
@@ -135,7 +153,7 @@ export class GroundService {
             Object.assign(groundsList, { [key]: arr[i][key] });
           }
         }
-    
+
         for (const key in groundsList) {
           if (id === groundsList[key]['ownerID']) {
             //  console.log(groundsList[key]['verified']);

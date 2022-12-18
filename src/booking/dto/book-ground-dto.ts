@@ -13,5 +13,5 @@ export class BookGroundDTO {
   @IsString()
   bookedSlot!: string;
 
-  dates?: string[] = ['18-11-2022'];
+  dates?: string[];
 }

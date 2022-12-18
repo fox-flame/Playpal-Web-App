@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadImageModule } from './upload-image/upload-image.module';
 import { BookingModule } from './booking/booking.module';
+import { GigModule } from './gig/gig.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BookingModule } from './booking/booking.module';
     AuthModule,
     UploadImageModule,
     BookingModule,
+    GigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

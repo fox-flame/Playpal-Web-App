@@ -41,6 +41,7 @@ export class UserService {
             for (const key in doc.data()) {
               if (id === key) {
                 user = doc.data()[key];
+                user['role'] = doc.id;
                 break;
               }
             }

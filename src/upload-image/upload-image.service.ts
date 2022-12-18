@@ -36,15 +36,79 @@ export class UploadImageService {
 
   //Upload multiple images
   async uploadMultiImg(images, uploadDTO) {
-    console.log('These are the files you have', images);
     var numFiles = images.length;
+
+    //Only 3 images are acceptable
+    if (numFiles > 0 && numFiles <= 3) {
+      // Read in the file, convert it to base64, store to S3
+      for (let i = 0; i < numFiles; i++) {
+        this.read(images[i], uploadDTO);
+      }
+    }
+  }
+
+  // Coaches files to upload
+  coachFiles(file, uploadDTO) {
+    const { userID } = uploadDTO;
+    var s3 = new AWS.S3();
+
+    var base64data = Buffer.from(file.buffer, 'binary');
+
+    s3.putObject(
+      {
+        Bucket: 'coaches-playpal',
+        Key: 'files' + '/' + userID + '/' + file.originalname,
+        Body: base64data,
+        ACL: 'public-read',
+      },
+      function (resp) {
+        console.log('Response is ', resp);
+        console.log('Successfully uploaded, ', file);
+      },
+    );
+  }
+  //Upload Coach Files
+  async uploadCoachFiles(files, uploadDTO) {
+    var numFiles = files.length;
 
     if (numFiles) {
       // Read in the file, convert it to base64, store to S3
 
       for (let i = 0; i < numFiles; i++) {
-        this.read(images[i], uploadDTO);
+        this.coachFiles(files[i], uploadDTO);
       }
+    }
+  }
+
+  //get Coach Files
+  async getCoachFiles(id:string,res:Response): Promise<any>{
+    try {
+      var fileURLS = [];
+      var s3 = new AWS.S3();
+      const params = {
+        Bucket: 'coaches-playpal',
+        Delimiter: '',
+        Prefix: 'files/' + id,
+      };
+      await s3.listObjectsV2(params, (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          for (let content of data.Contents) {
+            // console.log(content.Key);
+            let params = {
+              Bucket: 'coaches',
+              Key: content.Key,
+              Expires: 10000,
+            };
+            let url = s3.getSignedUrl('getObject', params);
+            fileURLS.push(url.toString());
+          }
+          res.send(fileURLS);
+        }
+      });
+    } catch (error) {
+      
     }
   }
 
