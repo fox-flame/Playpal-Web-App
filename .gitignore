@@ -1,7 +1,6 @@
 # compiled output
 /dist
 /node_modules
-/.local.env
 /firebase-adminsdk.json
 
 # Logs
