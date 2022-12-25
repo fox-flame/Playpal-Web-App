@@ -2,9 +2,7 @@ import { NestApplicationOptions, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as admin from 'firebase-admin';
-import { initializeApp } from 'firebase/app';
 import * as dotenv from 'dotenv';
-import { getAuth } from 'firebase/auth';
 dotenv.config();
 
 const firebaseConfig = {

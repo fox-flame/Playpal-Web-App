@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { UploadImageModule } from './upload-image/upload-image.module';
 import { BookingModule } from './booking/booking.module';
 import { GigModule } from './gig/gig.module';
+import { TeamModule } from './team/team.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { GigModule } from './gig/gig.module';
     UploadImageModule,
     BookingModule,
     GigModule,
+    TeamModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

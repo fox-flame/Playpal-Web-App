@@ -5,10 +5,14 @@ import * as admin from 'firebase-admin';
 import { BookGroundDTO } from './dto/book-ground-dto';
 import { UserService } from 'src/user/user.service';
 import { SlotDTO } from './dto/slot-dto';
-
+import { MyBookingsDTO } from './dto/myBookings-dto';
+import { GroundService } from 'src/ground/ground.service';
 @Injectable()
 export class BookingService {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private groundService: GroundService,
+  ) {}
 
   async create(createBookingDto: CreateBookingDto): Promise<any> {
     const { groundID, start1, close1, start2, close2 } = createBookingDto;
@@ -37,6 +41,59 @@ export class BookingService {
           { merge: true },
         )
         .then((res) => JSON.stringify('{isCreated:true}'));
+    } catch (error) {}
+  }
+  /**
+   *
+   * @param bookGroundDto
+   */
+  async getMyBookings(myBookingsDTO: MyBookingsDTO): Promise<any> {
+    try {
+      const { userID } = myBookingsDTO;
+      var myBookings = [];
+      let currentDate = new Date();
+      const db = admin.firestore();
+      await db
+        .collection('bookings')
+        .doc('6idYckzA4ZSAPld1hWsi')
+        .get()
+        .then(async (booking) => {
+          for (const [gid, value] of Object.entries(booking.data())) {
+            for (const [date, value1] of Object.entries(value)) {
+              // console.log(date);
+              let mySlots = [];
+              let dateArray = date.split('-');
+              let tempDate = new Date(
+                parseInt(dateArray[2]),
+                parseInt(dateArray[1]),
+                parseInt(dateArray[0]),
+              );
+              //show current and future bookings
+              if (tempDate >= currentDate) {
+                for (const [uid, slots] of Object.entries(value1)) {
+                  //    console.log('Slots: ', slots['bookedSlotID']);
+
+                  slots['bookedSlotID'].forEach((slot) => {
+                    mySlots.push(booking.data()[gid]['slots'][slot]);
+                  });
+                  if (userID === uid) {
+                    for (let i = 0; i < slots['bookedSlotID'].length; i++) {}
+
+                    const ground = await this.groundService.findGrounByID(gid);
+
+                    myBookings.push({
+                      name: ground[gid]['name'],
+                      location: ground[gid]['city'],
+                      slots: mySlots,
+                      price: ground[gid]['bookingRate'],
+                    });
+                  }
+                }
+              }
+            }
+          }
+        });
+      return myBookings;
     } catch (error) {}
   }
 
@@ -163,12 +220,8 @@ Book a ground
     try {
       const db = admin.firestore();
       let date = new Date();
-      let currentDate = date.getDate();
-      let currentMonth = date.getMonth();
-      let currentYear = date.getFullYear();
 
       // check current and future bookings
-      // check current date, month and year
       let users = [];
       return await db
         .collection('bookings')
@@ -181,12 +234,15 @@ Book a ground
           for (let i = 0; i < keys.length; i++) {
             let bookingSlot = g[keys[i]];
             let userObj = {};
-            let dateArray = keys[i].split('-'); // splitting eg. 11-08-2022
-            if (
-              parseInt(dateArray[0]) >= currentDate &&
-              parseInt(dateArray[1]) >= currentMonth &&
-              parseInt(dateArray[2]) >= currentYear
-            ) {
+            let dateArray = keys[i].split('-'); // splitting eg. 11-08-2022 // dd,mm,yy
+            //yy-mm-dd  //converting to date object
+            let tempDate = new Date(
+              parseInt(dateArray[2]),
+              parseInt(dateArray[1]),
+              parseInt(dateArray[0]),
+            );
+
+            if (tempDate >= date) {
               for (const [userID, value] of Object.entries(bookingSlot)) {
                 //fetch users data by id
                 let user = await this.userService.findUserByID(userID);
@@ -202,6 +258,7 @@ Book a ground
                 }
               }
               //after adding all users in respective dates, push into array
+              console.log(userObj);
               users.push(userObj);
             }
           }
@@ -245,6 +302,7 @@ Book a ground
     try {
       const db = admin.firestore();
       const bookedSlots = [];
+      const availableSlots = [];
       const { date, groundID } = slotsDTO;
 
       await db
@@ -254,19 +312,57 @@ Book a ground
         .then((snapshot) => {
           for (const [key, value] of Object.entries(snapshot.data())) {
             //  console.log(key); //ground id
-            for (const [key1, value1] of Object.entries(value)) {
-              if (key1 !== 'slots' && key1 === date) {
-                for (const [key2, value2] of Object.entries(value[key1])) {
-                  console.log(key2);
-                  bookedSlots.push(value2['bookedSlotID']);
+
+            if (key === groundID) {
+              //first check if date selected is not created then show all slots//
+              if (!Object.keys(value).includes(date)) {
+                for (let [k, v] of Object.entries(value['slots'])) {
+                  if (v === 'Full Day') {
+                    v = { slotID: k };
+                  }
+                  Object.assign(v, { slotID: k });
+                  availableSlots.push(v);
                 }
-                // bookedSlots.push(...value2['bookedSlotID']);
+
                 break;
+              }
+              for (const [key1, value1] of Object.entries(value)) {
+                if (key1 !== 'slots' && key1 === date) {
+                  for (const [key2, value2] of Object.entries(value[key1])) {
+                    //  console.log(key2);
+
+                    bookedSlots.push(...new Set(value2['bookedSlotID']));
+                  }
+                  // bookedSlots.push(...value2['bookedSlotID']);
+                  // if slot1 and slot2 is there on this date, don't show fullDay slot
+                  if (
+                    bookedSlots.length ===
+                      Object.keys(value['slots']).length - 1 ||
+                    bookedSlots.includes('fullDay')
+                  ) {
+                    break;
+                  } else {
+                    // even if, one slot is booked, don't show fullDay
+                    bookedSlots.forEach((slot) => {
+                      Object.keys(value['slots']).forEach((slotID) => {
+                        if (slot === slotID) {
+                        } else {
+                          if (slotID !== 'fullDay')
+                            availableSlots.push({
+                              ...value['slots'][slotID],
+                              slotID: slotID,
+                            });
+                        }
+                      });
+                    });
+                  }
+                  break;
+                }
               }
             }
           }
         });
-      console.log(bookedSlots);
+      return availableSlots.flat();
     } catch (error) {
       console.log('Error booking slots ', error);
     }

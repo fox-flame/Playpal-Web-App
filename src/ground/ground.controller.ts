@@ -27,6 +27,11 @@ export class GroundController {
     return await this.groundService.createGround(createGroundDto);
   }
 
+  @Get('coordinates')
+  async getLatLong(@Body() url: string): Promise<any> {
+    return this.groundService.getLatLong(url);
+  }
+
   @Get()
   findAll() {
     return this.groundService.findAll();

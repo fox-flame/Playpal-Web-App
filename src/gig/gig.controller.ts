@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { GigService } from './gig.service';
 import { CreateGigDto } from './dto/create-gig.dto';
 import { UpdateGigDto } from './dto/update-gig.dto';
@@ -13,8 +21,8 @@ export class GigController {
   }
 
   @Get()
-  findAll() {
-    return this.gigService.findAll();
+  async findAll(): Promise<any> {
+    return await this.gigService.findAll();
   }
 
   @Get(':id')

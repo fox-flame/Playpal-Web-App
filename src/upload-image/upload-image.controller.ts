@@ -30,6 +30,7 @@ export class UploadImageController {
   async uploadFiles(@UploadedFiles() files, @Body() uploadDTO: uploadDTO) {
     return await this.uploadImageService.uploadCoachFiles(files, uploadDTO);
   }
+
   @Get('/coach/:id')
   async findFilesOfOwnerById(
     @Param('id') id: string,

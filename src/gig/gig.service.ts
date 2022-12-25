@@ -31,9 +31,44 @@ export class GigService {
       console.log(error);
     }
   }
+  /**
+   * @returns all gigs of coaches.
+   */
+  async findAll(): Promise<any> {
+    try {
+      // mcfbUgSQkXX6mmtMiXKl gigs
+      var gigs = [];
+      const db = admin.firestore();
+      await db
+        .collection('users')
+        .doc('coaches')
+        .get()
+        .then(async (snapshot) => {
+          for (const [key, coach] of Object.entries(snapshot.data())) {
+            //check if coach created gig
 
-  findAll() {
-    return `This action returns all gig`;
+            if (Object.keys(coach).includes('gigID')) {
+              await db
+                .collection('gigs')
+                .doc('mcfbUgSQkXX6mmtMiXKl')
+                .get()
+                .then((g) => {
+                  if (Object.keys(g.data()).includes(coach['gigID'])) {
+                    Object.assign(coach, {
+                      gig: {
+                        ...g.data()[coach['gigID']],
+                      },
+                    });
+                    gigs.push({ ...coach });
+                  }
+                });
+            }
+          }
+        });
+      return gigs;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   findOne(id: number) {

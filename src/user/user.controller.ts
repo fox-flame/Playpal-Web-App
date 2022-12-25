@@ -11,6 +11,8 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserDto } from './dto/get-user-dto';
+import { VerifyCoachDTO } from './dto/verify-coach-DTO';
+import { Query } from '@nestjs/common/decorators/http/route-params.decorator';
 
 @Controller('user')
 export class UserController {
@@ -21,10 +23,27 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  // get unverified coaches
+  @Get('coaches')
+  async getUnverifiedCoaches(): Promise<any> {
+    return await this.userService.getCoaches();
+  }
+
   @Get('/all')
   findAll() {
     return this.userService.findAll();
   }
+
+  @Get('coach-check/:id')
+  async isVerified(@Param('id') id: string): Promise<any> {
+    return await this.userService.isCoachVerified(id);
+  }
+
+  @Patch('verify-coach')
+  async markCoachVerified(@Query() verifyDTO: VerifyCoachDTO): Promise<any> {
+    return await this.userService.markAsVerified(verifyDTO);
+  }
+
   @Get()
   async getUser(@Body() user: GetUserDto): Promise<any> {
     return await this.userService.getUserByRoleAndId(user);

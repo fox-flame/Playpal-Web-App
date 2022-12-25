@@ -2,6 +2,7 @@ import * as AWS from 'aws-sdk';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class UploadImageService {
@@ -49,7 +50,17 @@ export class UploadImageService {
 
   // Coaches files to upload
   coachFiles(file, uploadDTO) {
-    const { userID } = uploadDTO;
+    //update new coach data to firebase on specific userID.
+    const { userID, DOB, experience } = uploadDTO;
+    const db = admin.firestore();
+    db.collection('users')
+      .doc('coaches')
+      .update({
+        [`${userID}.DOB`]: DOB,
+        [`${userID}.experience`]: experience,
+        [`${userID}.verified`]:false,
+      });
+
     var s3 = new AWS.S3();
 
     var base64data = Buffer.from(file.buffer, 'binary');
@@ -81,7 +92,7 @@ export class UploadImageService {
   }
 
   //get Coach Files
-  async getCoachFiles(id:string,res:Response): Promise<any>{
+  async getCoachFiles(id: string, res: Response): Promise<any> {
     try {
       var fileURLS = [];
       var s3 = new AWS.S3();
@@ -107,9 +118,7 @@ export class UploadImageService {
           res.send(fileURLS);
         }
       });
-    } catch (error) {
-      
-    }
+    } catch (error) {}
   }
 
   async getGroundImages(id: string, res: Response): Promise<any> {

@@ -10,6 +10,7 @@ import {
 import { BookingService } from './booking.service';
 import { BookGroundDTO } from './dto/book-ground-dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { MyBookingsDTO } from './dto/myBookings-dto';
 import { SlotDTO } from './dto/slot-dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 
@@ -46,6 +47,11 @@ export class BookingController {
   @Get('slots')
   async findAvailableSlots(@Body() slotsDTO: SlotDTO): Promise<any> {
     return await this.bookingService.findAvailableSlots(slotsDTO);
+  }
+
+  @Get('my-bookings')
+  async getMyBookings(@Body() myBookingsDTO: MyBookingsDTO): Promise<any> {
+    return await this.bookingService.getMyBookings(myBookingsDTO);
   }
 
   @Patch(':id')

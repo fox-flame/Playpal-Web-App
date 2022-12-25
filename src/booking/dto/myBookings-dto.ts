@@ -1,13 +1,10 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class uploadDTO {
+export class MyBookingsDTO {
   @IsString()
   @IsNotEmpty()
   userID!: string;
 
-  @IsString()
-  DOB?: string;
-
-  @IsString()
-  experience?: string;
+  //   @IsString()
+  //   role?: string;
 }
