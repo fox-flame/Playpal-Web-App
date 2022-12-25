@@ -32,6 +32,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "cors": "^2.8.5",
+    "axios": "^1.2.1",
     "dotenv": "^16.0.3",
     "firebase": "^9.14.0",
     "firebase-admin": "^11.3.0",
