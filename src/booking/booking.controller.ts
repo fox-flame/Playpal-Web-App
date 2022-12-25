@@ -45,7 +45,7 @@ export class BookingController {
   }
 
   @Get('slots')
-  async findAvailableSlots(@Body() slotsDTO: SlotDTO): Promise<any> {
+  async findAvailableSlots(@Query() slotsDTO: SlotDTO): Promise<any> {
     return await this.bookingService.findAvailableSlots(slotsDTO);
   }
 
