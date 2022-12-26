@@ -51,7 +51,7 @@ export class BookingController {
   }
 
   @Get('my-bookings')
-  async getMyBookings(@Body() myBookingsDTO: MyBookingsDTO): Promise<any> {
+  async getMyBookings(@Query() myBookingsDTO: MyBookingsDTO): Promise<any> {
     return await this.bookingService.getMyBookings(myBookingsDTO);
   }
 
