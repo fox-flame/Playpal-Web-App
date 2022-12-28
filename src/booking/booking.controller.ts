@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { Query } from '@nestjs/common/decorators';
 import { BookingService } from './booking.service';
 import { BookGroundDTO } from './dto/book-ground-dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -45,12 +46,12 @@ export class BookingController {
   }
 
   @Get('slots')
-  async findAvailableSlots(@Body() slotsDTO: SlotDTO): Promise<any> {
+  async findAvailableSlots(@Query() slotsDTO: SlotDTO): Promise<any> {
     return await this.bookingService.findAvailableSlots(slotsDTO);
   }
 
   @Get('my-bookings')
-  async getMyBookings(@Body() myBookingsDTO: MyBookingsDTO): Promise<any> {
+  async getMyBookings(@Query() myBookingsDTO: MyBookingsDTO): Promise<any> {
     return await this.bookingService.getMyBookings(myBookingsDTO);
   }
 

@@ -10,6 +10,7 @@ import {
 import { TeamService } from './team.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
+import { AddPlayerDTO } from './dto/add-player-dto';
 
 @Controller('team')
 export class TeamController {
@@ -25,10 +26,24 @@ export class TeamController {
     return await this.teamService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.teamService.findOne(+id);
+
+  @Post('/add-player')
+  async addPlayer(@Body() addPlayerDto:AddPlayerDTO) {
+    return await this.teamService.addPlayer(addPlayerDto);    
   }
+
+  @Get('/members/:id') 
+  async getMembersofTeam(@Param('id') id:string):Promise<any>{
+    return await this.teamService.getMembersofTeam(id);
+  }
+
+  
+  @Get(':id')
+  findMyTeam(@Param('id') id: string) {
+    return this.teamService.findOne(id);
+  }
+
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTeamDto: UpdateTeamDto) {

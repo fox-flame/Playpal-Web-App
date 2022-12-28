@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as admin from 'firebase-admin';
 import { GetUserDto } from './dto/get-user-dto';
 import { VerifyCoachDTO } from './dto/verify-coach-DTO';
+import { HireCoachDTO } from './dto/hire-coach.dto';
 
 @Injectable()
 export class UserService {
@@ -100,7 +101,7 @@ export class UserService {
         .then((coach) => {
           for (const [key, value] of Object.entries(coach.data())) {
             if (value['verified'] === false) {
-              coaches.push({ ...value });
+              coaches.push({ id: key, ...value });
             }
           }
         });
@@ -160,6 +161,128 @@ export class UserService {
       return user;
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async hireCoach(hireCoachDto: HireCoachDTO): Promise<any> {
+    try {
+      const { coachID, playerID } = hireCoachDto;
+      const db = admin.firestore();
+
+      await db
+        .collection('users')
+        .doc('player')
+        .update({
+          [`${playerID}.myCoaches`]: {
+            [coachID]: 'coach',
+          },
+        });
+
+      await db
+        .collection('users')
+        .doc('coaches')
+        .update({
+          [`${coachID}.myStudents`]: {
+            [playerID]: 'player',
+          },
+        });
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+
+  /**
+   *
+   * @param id  of player
+   */
+  async getMyCoach(id: string): Promise<any> {
+    try {
+      const db = admin.firestore();
+
+      let myCoach = {};
+
+      await db
+        .collection('users')
+        .doc('player')
+        .get()
+        .then(async (player) => {
+          for (const [playerID, value] of Object.entries(player.data())) {
+            if (playerID === id) {
+              for (const [coachid, value1] of Object.entries(
+                value['myCoaches'],
+              )) {
+                //name,experience,age of coach
+                await db
+                  .collection('users')
+                  .doc('coaches')
+                  .get()
+                  .then((coach) => {
+                    for (const [coachKey, coachValue] of Object.entries(
+                      coach.data(),
+                    )) {
+                      if (coachid === coachKey) {
+                        Object.assign(myCoach, coachValue);
+                        break;
+                      }
+                    }
+                  });
+              }
+              break;
+            }
+          }
+        });
+      return myCoach;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+/**
+ * 
+ * @param id of coach
+ * @returns students list
+ */
+  async getMyStudents(id: string): Promise<any> {
+    try {
+      const db = admin.firestore();
+      let myStudents = [];
+      await db
+        .collection('users')
+        .doc('coaches')
+        .get()
+        .then(async (coach) => {
+          for (const [coachID, value] of Object.entries(coach.data())) {
+            //coachID
+            if (coachID === id) {
+              for (const [playerID, player] of Object.entries(
+                value['myStudents'],
+              )) {
+                await db
+                  .collection('users')
+                  .doc('player')
+                  .get()
+                  .then((p) => {
+                    for (const [pid, data] of Object.entries(p.data())) {
+                      if (playerID === pid) {
+                        // console.log(pid);
+                        myStudents.push({
+                          studentID: playerID,
+                          phoneNumber: data['phoneNumber'],
+                          displayName: data['displayName'],
+                        });
+                      }
+                    }
+                  });
+              }
+              break;
+            }
+          }
+        });
+      return myStudents;
+    } catch (error) {
+      console.log(error);
+      return error;
     }
   }
 

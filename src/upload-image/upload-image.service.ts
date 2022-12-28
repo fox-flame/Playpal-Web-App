@@ -58,7 +58,7 @@ export class UploadImageService {
       .update({
         [`${userID}.DOB`]: DOB,
         [`${userID}.experience`]: experience,
-        [`${userID}.verified`]:false,
+        [`${userID}.verified`]: false,
       });
 
     var s3 = new AWS.S3();
@@ -108,7 +108,7 @@ export class UploadImageService {
           for (let content of data.Contents) {
             // console.log(content.Key);
             let params = {
-              Bucket: 'coaches',
+              Bucket: 'coaches-playpal',
               Key: content.Key,
               Expires: 10000,
             };
@@ -118,7 +118,10 @@ export class UploadImageService {
           res.send(fileURLS);
         }
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 
   async getGroundImages(id: string, res: Response): Promise<any> {

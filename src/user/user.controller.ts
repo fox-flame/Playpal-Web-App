@@ -6,13 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserDto } from './dto/get-user-dto';
 import { VerifyCoachDTO } from './dto/verify-coach-DTO';
-import { Query } from '@nestjs/common/decorators/http/route-params.decorator';
+import { HireCoachDTO } from './dto/hire-coach.dto';
 
 @Controller('user')
 export class UserController {
@@ -54,6 +55,23 @@ export class UserController {
     return await this.userService.findUserByID(id);
   }
 
+
+  @Post('hire-coach')
+  async hireCoach(@Body() hireCoachDto:HireCoachDTO): Promise<any>{
+    return await this.userService.hireCoach(hireCoachDto);
+  }
+  
+  @Get('my-coach/:id')
+  async getMyCoach(@Param('id') id: string): Promise<any>{
+    return this.userService.getMyCoach(id);
+    }
+
+  
+  @Get('students/:id')
+  async getMyStudents(@Param('id') id:string): Promise<any>{
+    return await this.userService.getMyStudents(id);  
+  }
+  
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);

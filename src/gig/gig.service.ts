@@ -46,8 +46,13 @@ export class GigService {
         .then(async (snapshot) => {
           for (const [key, coach] of Object.entries(snapshot.data())) {
             //check if coach created gig
+            console.log(coach);
 
             if (Object.keys(coach).includes('gigID')) {
+              if (Object.keys(coach).includes('myStudents')) {
+                delete coach.myStudents;
+              }
+
               await db
                 .collection('gigs')
                 .doc('mcfbUgSQkXX6mmtMiXKl')
@@ -71,8 +76,27 @@ export class GigService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} gig`;
+  async findOne(id: string): Promise<any> {
+    try {
+      const db = admin.firestore();
+      let myGIG = {};
+      await db
+        .collection('gigs')
+        .doc('mcfbUgSQkXX6mmtMiXKl')
+        .get()
+        .then((gig) => {
+          for (const [gigID, value] of Object.entries(gig.data())) {
+            if (value['userID'] === id) {
+              Object.assign(myGIG, {
+                gigID: gigID,
+                ...value,
+              });
+              break;
+            }
+          }
+        });
+      return myGIG;
+    } catch (error) {}
   }
 
   update(id: number, updateGigDto: UpdateGigDto) {

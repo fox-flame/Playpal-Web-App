@@ -26,8 +26,8 @@ export class GigController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.gigService.findOne(+id);
+  async findOne(@Param('id') id: string):Promise<any> {
+    return await this.gigService.findOne(id);
   }
 
   @Patch(':id')

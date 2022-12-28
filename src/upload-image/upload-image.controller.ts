@@ -32,7 +32,7 @@ export class UploadImageController {
   }
 
   @Get('/coach/:id')
-  async findFilesOfOwnerById(
+  async findFilesOfCoachById(
     @Param('id') id: string,
     @Res() res: Response,
   ): Promise<any> {
