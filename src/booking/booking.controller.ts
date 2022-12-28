@@ -8,7 +8,6 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { Query } from '@nestjs/common/decorators';
 import { BookingService } from './booking.service';
 import { BookGroundDTO } from './dto/book-ground-dto';
 import { CreateBookingDto } from './dto/create-booking.dto';
