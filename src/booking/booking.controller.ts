@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { Query } from '@nestjs/common/decorators';
 import { BookingService } from './booking.service';
