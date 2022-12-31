@@ -3,12 +3,15 @@ import FormInput from "../../components/Input/input-field.component";
 import {
   createBooking,
   findGroundByID,
+  getGroundSlots,
   isSlot,
   registerGround,
+  updateGroundTime,
   uploadImages,
 } from "../../services/grounds.services";
 import { UserContext } from "../../context/user.context";
 import { useEffect } from "react";
+import { toast } from "react-toastify";
 import FirstLoader from "../../components/startingLoader/firstLoader.component";
 import { Calendar } from "react-calendar";
 import Viewer from "../../components/imageViewer/viewer.component";
@@ -34,8 +37,9 @@ const defaultBookingFields = {
   close2: "",
 };
 const MyGround = () => {
-  const { currentUser, setHaveVerifiedGround } = useContext(UserContext);
+  const { currentUser } = useContext(UserContext);
   const [noGround, setNoGround] = useState(false);
+  const [slotLoader, setSlotLoader] = useState();
   const [myGround, setMyGround] = useState({});
   const [isVerified, setVerified] = useState();
   const [date, setDate] = useState(new Date());
@@ -68,7 +72,26 @@ const MyGround = () => {
   }, []);
 
   useEffect(() => {
+    //fetch slots that are already present and show those
+    isSlot(groundID).then((res) => {
+      setCreatedSlot(res.data);
+      if (res.data === true) {
+        //setting already created slots in fields
+        getGroundSlots(groundID).then((res) => {
+          const tempSlots = res.data;
+          setBookingFields({
+            ...bookingFields,
+            start1: tempSlots["slot1"]["startTime"],
+            close1: tempSlots["slot1"]["closeTime"],
+            start2: tempSlots["slot2"]["startTime"],
+            close2: tempSlots["slot2"]["closeTime"],
+          });
+        });
+      }
+    });
+
     setSlots(getTimeStops(myGround["openAt"], myGround["closeAt"], 2)); //dividing time into slots and set into state
+    console.log(slots);
     if (slots.length > 0)
       setBookingFields({
         ...bookingFields,
@@ -77,8 +100,6 @@ const MyGround = () => {
         start2: slots[1],
         close2: slots[2],
       });
-    //checking, if user has created a slot for booking
-    isSlot(groundID).then((res) => setCreatedSlot(res.data));
   }, [myGround]);
 
   useEffect(() => {
@@ -86,7 +107,24 @@ const MyGround = () => {
     const newImageUrls = [];
     images.forEach((image) => newImageUrls.push(URL.createObjectURL(image)));
     setImageURLs(newImageUrls);
+    console.log(imageURLS);
   }, [images]);
+
+  //function to get lat long from url
+  function getLatLongFromUrl(mapUrl) {
+    var url = mapUrl.split("@");
+    var at = url[1].split("z");
+    var zero = at[0].split(",");
+    var lat = zero[0];
+    var lon = zero[1];
+    console.log("LAT: ", lat, " LONG: ", lon);
+  }
+
+  // uses to check if user wants to change slot
+  // onKeyPress
+  function isSlotFieldChanged(event) {
+    document.getElementById("slot-btn").disabled = false;
+  }
 
   // function to divide time of range into no of slots
   function getTimeStops(start, end, slots) {
@@ -137,24 +175,37 @@ const MyGround = () => {
 
     const { name, value } = event.target;
 
-    // console.log(event.target.value);
+    console.log(event.target.value);
     setBookingFields({ ...bookingFields, [name]: value });
   };
   const handleBookingSubmit = (event) => {
     event.preventDefault();
 
     try {
-      if (!isSlotCreated) {
-        createBooking({
+      document.getElementById("slot-btn").disabled = true;
+      setSlotLoader(true);
+      createBooking({
+        groundID: groundID,
+        start1: start1,
+        close1: close1,
+        start2: start2,
+        close2: close2,
+      }).then(async (res) => {
+        await updateGroundTime({
           groundID: groundID,
-          start1: start1,
-          close1: close1,
-          start2: start2,
-          close2: close2,
-        }).then((res) => console.log(res));
-      } else {
-        //update slot
-      }
+          sports: myGround["sports"],
+          city: myGround["city"],
+          openAt: start1,
+          closeAt: close2,
+        });
+        setSlotLoader(false);
+        setCreatedSlot(true);
+
+        toast.success("Slot created successfully", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        console.log(res);
+      });
     } catch (error) {
       console.log("Error creating booking ", error);
     }
@@ -170,7 +221,12 @@ const MyGround = () => {
     event.preventDefault();
 
     try {
-      if (images.length < 1) return;
+      if (images.length < 1) {
+        toast.error("Please add ground images", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        return;
+      }
 
       let formData = new FormData();
       images.forEach((img) => formData.append("grounds[]", img));
@@ -178,6 +234,7 @@ const MyGround = () => {
 
       registerGround(formFields);
       uploadImages(formData);
+
       ResetForm();
     } catch (error) {
       console.log("Cannot submit data of grounds", error);
@@ -462,7 +519,17 @@ const MyGround = () => {
                 Reset
               </button>
               &nbsp;&nbsp;
-              <button type="submit" class="btn bg-gradient-primary">
+              <button
+                type="submit"
+                class="btn bg-gradient-primary"
+                onClick={() => {
+                  if (images.length === 0) {
+                    toast.error("Please add ground images", {
+                      position: toast.POSITION.TOP_RIGHT,
+                    });
+                  }
+                }}
+              >
                 Save changes
               </button>
             </div>
@@ -479,72 +546,70 @@ const MyGround = () => {
               </div>
             </div>
             <hr class="horizontal dark my-4" />
-            <div class="d-flex align-items-center flex-wrap">
-              <Calendar onChange={setDate} value={date} />
+            <div class="d-flex flex-wrap">
+              <div>
+                <label class="form-control-label">
+                  {`Is Booking available on ${
+                    date.getDate() +
+                    "-" +
+                    date.getMonth() +
+                    "-" +
+                    date.getFullYear()
+                  } ?`}
+                </label>
+                <Calendar onChange={setDate} value={date} />
+                <br />
+                <div class="row">
+                  <div class="col col-lg-6">
+                    <div class="form-group">
+                      <select
+                        class="form-select"
+                        aria-label="Default select"
+                        name="status"
+                        value={status}
+                        onChange={handleBookingSettings}
+                        required
+                      >
+                        <option value={""} hidden>
+                          Eg. Open
+                        </option>
+                        <option value="open">Open</option>
+                        <option value="close">Close</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="col col-lg-6">
+                    <button
+                      type="button"
+                      className="btn bg-gradient-primary"
+                      onClick={() => {}}
+                    >
+                      Update Status
+                    </button>
+                  </div>
+                </div>
 
+                <hr class="horizontal dark my-4" />
+              </div>
               <div className="card-body">
                 {/* <h6 class="heading-small text-muted mb-4">
                   Availability settings
                 </h6> */}
 
                 <form onSubmit={handleBookingSubmit}>
-                  <div class="row">
-                    <div class="col col-lg-6">
-                      <div class="form-group">
-                        <label class="form-control-label">
-                          Set booking status
-                        </label>
-                        <select
-                          class="form-select"
-                          aria-label="Default select"
-                          name="status"
-                          value={status}
-                          onChange={handleBookingSettings}
-                          required
-                        >
-                          <option value={""} hidden>
-                            Open
-                          </option>
-                          <option value="open">Open</option>
-                          <option value="close">Close</option>
-                        </select>
-                      </div>
-                    </div>
-                    {/* <div class="col col-lg-6">
-                      <div class="form-group">
-                        <label class="form-control-label">Any reason</label>
-                        <select
-                          class="form-select"
-                          aria-label="Default select"
-                          name="sports"
-                          value={sports}
-                          onChange={handleChange}
-                          required
-                        >
-                          <option value={""} hidden>
-                            Booking
-                          </option>
-                          <option value="open">Booking</option>
-                          <option value="close">Close</option>
-                        </select>
-                      </div>
-                    </div> */}
-                  </div>
-
-                  <hr class="horizontal dark my-4" />
-                  <p class="text-muted mb-4 text-center">
-                    Set available timings
-                  </p>
+                  <p class="text-muted mb-4">My Ground Slots</p>
                   <div class="row">
                     <div class="col-lg-6">
                       <div class="form-group">
                         <label class="form-control-label">From</label>
                         <FormInput
+                          id="openTime"
                           type="time"
                           class="form-control"
                           name="start1"
                           value={start1}
                           onChange={handleBookingSettings}
+                          onKeyUp={isSlotFieldChanged}
                           required
                         />
                       </div>
@@ -558,6 +623,7 @@ const MyGround = () => {
                           name="close1"
                           value={close1}
                           onChange={handleBookingSettings}
+                          onKeyUp={isSlotFieldChanged}
                           required
                         />
                       </div>
@@ -573,7 +639,7 @@ const MyGround = () => {
                           name="start2"
                           value={start2}
                           onChange={handleBookingSettings}
-                          disabled
+                          onKeyUp={isSlotFieldChanged}
                           required
                         />
                       </div>
@@ -587,7 +653,7 @@ const MyGround = () => {
                           name="close2"
                           value={close2}
                           onChange={handleBookingSettings}
-                          disabled
+                          onKeyUp={isSlotFieldChanged}
                           required
                         />
                       </div>
@@ -598,13 +664,31 @@ const MyGround = () => {
                       Reset
                     </button>
                     &nbsp;&nbsp; */}
-                    <button
-                      type="submit"
-                      class="btn bg-gradient-primary w-100"
-                      style={{ height: "50px" }}
-                    >
-                      Create slots
-                    </button>
+                    {slotLoader == true ? (
+                      <button
+                        type="submit"
+                        class="btn bg-gradient-primary w-100"
+                        style={{ height: "50px" }}
+                        disabled={true}
+                      >
+                        <img
+                          src={require("../../assets/img/loader2.gif")}
+                          alt=""
+                          srcset=""
+                          width="20px"
+                        />
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        id="slot-btn"
+                        class="btn bg-gradient-primary w-100"
+                        style={{ height: "50px" }}
+                        disabled={isSlotCreated}
+                      >
+                        {isSlotCreated ? "Update" : "Create slots"}
+                      </button>
+                    )}
                   </div>
                 </form>
               </div>

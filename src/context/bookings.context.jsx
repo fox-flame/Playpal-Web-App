@@ -1,16 +1,16 @@
 import { createContext, useState } from "react";
 
 export const BookingContext = createContext({
-  bookingsRequest: [],
-  setRequest: () => {},
+  myBookings: [],
+  setMyBookings: () => {},
 });
 
 export const BookingProvider = ({ children }) => {
-  const [bookingsRequest, setRequest] = useState([]);
+  const [myBookings, setMyBookings] = useState([]);
 
   const value = {
-    bookingsRequest,
-    setRequest,
+    myBookings,
+    setMyBookings,
   };
 
   return (

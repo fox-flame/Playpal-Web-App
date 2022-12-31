@@ -1,4 +1,5 @@
-import FormInput from "../../components/Input/input-field.component"
+import { useEffect } from "react";
+import FormInput from "../../components/Input/input-field.component";
 const Settings = () => {
   return (
     <div className="card">
@@ -12,7 +13,6 @@ const Settings = () => {
             </div>
           </div>
           {/* {<Viewer images={imageURLS} />} */}
-         
 
           <hr class="horizontal dark my-4" />
           <h6 class="heading-small text-muted mb-4">Ground Information</h6>

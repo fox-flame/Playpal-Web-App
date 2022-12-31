@@ -4,6 +4,10 @@ export function getGroundsWithOwner() {
   return myAxios.get("/ground/ground-and-owner");
 }
 
+export function getMyBookings(id) {
+  return myAxios.get(`/booking/ground/${id}`);
+}
+
 export function registerGround(data = {}) {
   const {
     name,
@@ -58,7 +62,15 @@ export function markAsVerified(id, type, city) {
 }
 
 export function isSlot(id) {
-  return myAxios.get(`/booking/${id}`);
+  return myAxios.get(`/booking/slot/${id}`);
+}
+
+export function getGroundSlots(id) {
+  return myAxios.get(`/booking/ground-slots/${id}`);
+}
+
+export function updateGroundTime(payload) {
+  return myAxios.patch("/booking/update-time", payload);
 }
 
 export function createBooking(payload) {

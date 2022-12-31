@@ -43,6 +43,9 @@ const Signup = () => {
       ResetForm();
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
+        document.getElementsByClassName("in-use")[0].innerHTML =
+          "Email already in use";
+        document.getElementsByClassName("in-use")[0].style.color = "red";
         console.log("Email already in use");
       }
       console.log("Error signing up ", error);
@@ -53,6 +56,41 @@ const Signup = () => {
     const { name, value } = event.target; // getting event and attached attributes and destructuring them
     console.log(event.target.value);
     setFormFields({ ...formFields, [name]: value });
+    // if name is Password
+    //Add regex here
+    if (name === "Password") {
+      const passwordRegex = new RegExp(
+        /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+])[A-Za-z\d][A-Za-z\d!@#$%^&*()_+]{7,19}$/
+      );
+
+      if (!passwordRegex.test(value)) {
+        document.getElementsByName("ConfirmPassword")[0].disabled = true;
+        document.getElementsByName(name)[0].style.border = "1px solid red";
+        document.getElementsByClassName("Error")[0].innerHTML =
+          "Password contains 1 capital, 1 special, 1 numeric";
+      } else {
+        document.getElementsByClassName("Error")[0].innerHTML = "";
+        document.getElementsByName(name)[0].style.border = "1px solid green";
+        document.getElementsByName("ConfirmPassword")[0].disabled = false;
+      }
+    }
+
+    if (name === "ConfirmPassword") {
+      if (
+        document.getElementsByName(name)[0].value ===
+        document.getElementsByName("Password")[0].value
+      ) {
+        document.getElementsByClassName("confirm")[0].innerHTML =
+          "Password matched";
+        document.getElementsByName("ConfirmPassword")[0].style.border =
+          "1px solid green";
+      } else {
+        document.getElementsByClassName("confirm")[0].innerHTML =
+          "Password not matched";
+        document.getElementsByName("ConfirmPassword")[0].style.border =
+          "1px solid red";
+      }
+    }
   };
 
   return (
@@ -134,6 +172,10 @@ const Signup = () => {
                           onChange={handleChange}
                           value={Password}
                         />
+                        <p
+                          className="Error"
+                          style={{ fontSize: "10px", color: "red" }}
+                        ></p>
                       </div>
                       <div class="mb-3">
                         <FormInput
@@ -145,7 +187,9 @@ const Signup = () => {
                           name="ConfirmPassword"
                           onChange={handleChange}
                           value={ConfirmPassword}
+                          disabled={true}
                         />
+                        <p className="confirm" style={{ fontSize: "10px" }}></p>
                       </div>
                       <div class="form-check form-check-info text-left">
                         <input
@@ -181,6 +225,7 @@ const Signup = () => {
                           Sign in
                         </span>
                       </p>
+                      <p className="in-use"></p>
                     </form>
                   </div>
                 </div>

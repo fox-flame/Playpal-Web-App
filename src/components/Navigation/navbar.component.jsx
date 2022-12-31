@@ -60,7 +60,7 @@ const Navbar = () => {
                   <HomeIcon />
                 </Navlink>
 
-                <Navlink name={"Booking Requests"} url={"/requests"}>
+                <Navlink name={"My Bookings"} url={"/requests"}>
                   <GroundsIcon />
                 </Navlink>
                 <Navlink name={"Booking Settings"} url={"/my-ground"}>
