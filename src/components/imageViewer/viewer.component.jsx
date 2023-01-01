@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from "react";
 import { useEffect } from "react";
-import { createRoot } from "react-dom/client";
 import ImageViewer from "react-simple-image-viewer";
 
 const Viewer = ({ images = [] }) => {

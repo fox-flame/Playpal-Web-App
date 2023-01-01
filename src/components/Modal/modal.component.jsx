@@ -1,47 +1,77 @@
+import { useEffect } from "react";
 import { useContext, useState } from "react";
+import { Calendar } from "react-calendar";
 
 import { toast } from "react-toastify";
 import { GroundContext } from "../../context/grounds.context";
+import { UserContext } from "../../context/user.context";
 import {
+  findGroundByID,
   markAsVerified,
-  markAsRejected,
 } from "../../services/grounds.services";
+import { getAvailableSlots } from "../../services/slots.services";
+import FormInput from "../Input/input-field.component";
 
-const Modal = ({ index, ground }) => {
-  const { groundsRequest, setRequest } = useContext(GroundContext);
-  const [verifyLoader, setVerifyLoader] = useState();
-  const handlerVerified = (id, type, city) => {
-    setVerifyLoader(true);
-    markAsVerified(id, type, city).then((response) => {
-      setVerifyLoader(response.status === 200); //making false to stop loader
-      closeModal();
+const Modal = () => {
+  const { currentUser } = useContext(UserContext);
+  const [date, setDate] = useState(new Date());
+  const [gid, setGroundID] = useState();
+  const [slots, setSlots] = useState([]);
 
-      setRequest(
-        groundsRequest.filter((ground) => ground.owner["groundID"] !== id)
-      );
-      toast.success("Verified Successfully", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      // setTimeout(window.location.reload(false), 2000);
+  useEffect(() => {
+    findGroundByID(currentUser.uid).then(async (res) => {
+      let key = Object.keys(res.data);
+      setGroundID(key[0]);
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    let dte =
+      date.getDate().toString() +
+      "-" +
+      (date.getMonth() + 1).toString() +
+      "-" +
+      date.getFullYear().toString();
+    getAvailableSlots(gid, dte).then((res2) => {
+      setSlots(res2.data);
+    });
+  }, [date]);
+  // const { groundsRequest, setRequest } = useContext(GroundContext);
+  // const [verifyLoader, setVerifyLoader] = useState();
+  // const handlerVerified = (id, type, city) => {
+  //   setVerifyLoader(true);
+  //   markAsVerified(id, type, city).then((response) => {
+  //     console.log("response");
+  //     console.log(response);
+  //     setVerifyLoader(response.status === 200); //making false to stop loader
+  //     closeModal();
+
+  //     setRequest(
+  //       groundsRequest.filter((ground) => ground.owner["groundID"] !== id)
+  //     );
+  //     toast.success("Verified Successfully", {
+  //       position: toast.POSITION.TOP_RIGHT,
+  //     });
+  //     // setTimeout(window.location.reload(false), 2000);
+  //   });
+  // };
 
   // Close modal helper
-  const closeModal = () => {
-    document.getElementById(`exampleModal${index}`).style.display = "none";
-    document
-      .getElementsByclassName("modal-backdrop")[0]
-      .classList.remove("show");
-    document.getElementsByclassName("modal-backdrop")[0].style.display = "none";
-    document.body.classList.remove("modal-open");
-    document.body.removeAttribute("style");
-  };
+  // const closeModal = () => {
+  //   document.getElementById(`exampleModal${index}`).style.display = "none";
+  //   document
+  //     .getElementsByClassName("modal-backdrop")[0]
+  //     .classList.remove("show");
+  //   document.getElementsByClassName("modal-backdrop")[0].style.display = "none";
+  //   document.body.classList.remove("modal-open");
+  //   document.body.removeAttribute("style");
+  // };
   return (
     <div
       className="modal fade"
-      id={"exampleModal" + index}
+      id={"exampleModal"}
       tabIndex="-1"
-      aria-labelledby={"exampleModalLabel" + index}
+      aria-labelledby={"exampleModalLabel"}
       aria-hidden="true"
       data-backdrop="false"
       style={{ display: "none" }}
@@ -49,79 +79,71 @@ const Modal = ({ index, ground }) => {
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title" id={"exampleModalLabel" + index}>
-              Ground Verification
+            <h5 className="modal-title" id={"exampleModalLabel"}>
+              New Booking
             </h5>
+
             <button
               type="button"
               className="btn-close"
               data-bs-dismiss="modal"
               aria-label="Close"
+              style={{ backgroundColor: "grey" }}
             >
               <span aria-hidden="true">×</span>
             </button>
           </div>
           <div className="modal-body">
-            <div className="d-flex justify-content-between">
-              <div className="d-flex px-2 py-1">
-                <div>
-                  <img
-                    src={ground.owner["myPic"]}
-                    className="avatar avatar-sm me-3"
-                    alt="user1"
-                  />
-                </div>
-                <div className="d-flex flex-column justify-content-center">
-                  <h6 className="mb-0 text-sm">{ground.owner["name"]}</h6>
-                  <p className="text-xs text-secondary mb-0">
-                    {ground.owner["phoneNumber"]}
-                  </p>
-                </div>
-              </div>
+            <div>
+              <form>
+                <label class="form-control-label">Select date</label>
+                <Calendar onChange={setDate} value={date} />
 
-              <div>
-                <a href={"tel:" + ground.owner["phoneNumber"]}>
-                  <img src={require("../../assets/img/call-icon.png")} alt="" />
-                </a>
-              </div>
-            </div>
-
-            <div className="d-flex px-2 py-1 justify-content-between mt-4 border border-2 rounded">
-              <div className="d-flex flex-column justify-content-center">
-                <p className="mb-0 text-sm">Click to view Location</p>
-              </div>
-              <div className="d-flex flex-column justify-content-center">
-                <a
-                  href="https://www.google.com/maps/dir/33.7146256,73.0759443/Rawalpindi+cricket+stadium+map/@33.6844265,73.0311983,13z/data=!3m1!4b1!4m9!4m8!1m1!4e1!1m5!1m1!1s0x38df95ca303fb4ab:0x36a43fbd8951b83b!2m2!1d73.0760641!2d33.6515516"
-                  target="_blank"
-                  className="text-xs text-secondary mb-0"
+                <label class="form-control-label pt-4">
+                  Select Available Slots
+                </label>
+                <select
+                  class="form-select"
+                  aria-label="Default select"
+                  name="slots"
+                  required
                 >
-                  Islamabad, H12
-                </a>
-              </div>
-            </div>
-
-            <h6 className="mb-2 mt-4">{ground.name}</h6>
-
-            <div className="d-flex px-2 py-1 justify-content-between mt-4">
-              <div className="d-flex flex-column justify-content-center">
-                <p className="mb-0 text-sm">Ground Size</p>
-              </div>
-              <div className="d-flex flex-column justify-content-center">
-                <p className="text-xs text-secondary mb-0">10000</p>
-              </div>
+                  <option value={""} hidden>
+                    E.g Slot 1
+                  </option>
+                  {slots.map((slot) => (
+                    <option value={slot["slotID"]}>
+                      {slot["startTime"]
+                        ? slot["startTime"] + "-" + slot["closeTime"]
+                        : slot["slotID"]}
+                    </option>
+                  ))}
+                </select>
+                <label class="form-control-label pt-4">Name of person</label>
+                <FormInput
+                  type="text"
+                  class="form-control"
+                  placeholder="Name of person who booked"
+                  name="name"
+                  required
+                />
+              </form>
             </div>
           </div>
           <div className="modal-footer">
             <button
               type="button"
-              className="btn bg-gradient-secondary"
+              className="btn bg-gradient-primary"
               data-bs-dismiss=""
             >
-              REJECT
+              ADD TO BOOKING
             </button>
-            {verifyLoader == true ? (
-              <button type="button" className="btn bg-gradient-primary">
+            {/* {verifyLoader == true ? (
+              <button
+                type="button"
+                className="btn bg-gradient-primary"
+                disabled={true}
+              >
                 <img
                   src={require("../../assets/img/loader2.gif")}
                   alt=""
@@ -136,14 +158,14 @@ const Modal = ({ index, ground }) => {
                 onClick={() => {
                   handlerVerified(
                     ground.owner["groundID"],
-                    ground.type,
+                    ground.sports,
                     ground.city
                   );
                 }}
               >
                 VERIFY
               </button>
-            )}
+            )} */}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import {
   getMyBookings,
 } from "../../services/grounds.services";
 import { UserContext } from "../../context/user.context";
+import Modal from "../../components/Modal/modal.component";
 
 const MyBookings = () => {
   const { currentUser } = useContext(UserContext);
@@ -14,14 +15,14 @@ const MyBookings = () => {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     findGroundByID(currentUser.uid)
-      .then(async (res) => {
+      .then((res) => {
         let key = Object.keys(res.data);
         let values = Object.values(res.data);
         if (values[0]["verified"] === false) {
           setVerified(false);
           setLoading(false);
         } else {
-          await getMyBookings(key).then((res) => {
+          getMyBookings(key[0]).then((res) => {
             setBookings(Object.values(res.data));
 
             setLoading(false);
@@ -37,8 +38,20 @@ const MyBookings = () => {
     <div className="row">
       <div className="col-12">
         <div className="card mb-4">
-          <div className="card-header pb-0">
-            <h6>Grounds Requests</h6>
+          <div
+            className="card-header pb-0 d-flex align-items-center"
+            style={{ justifyContent: "space-between" }}
+          >
+            <h6>My Ground Bookings</h6>
+            <button
+              type="button"
+              className="btn bg-gradient-primary"
+              data-bs-toggle="modal"
+              data-bs-target={"#exampleModal"}
+            >
+              Add Booking +
+            </button>
+            <Modal />
           </div>
           {loading ? (
             <div className="m-auto text-center">
@@ -61,6 +74,7 @@ const MyBookings = () => {
             <div className="m-auto text-center">
               <img src={require("../../assets/img/404.png")} width="200px" />
               <p className="pt-2">Seems like there are no Bookings</p>
+
               {/* <p>Add new booking +</p> */}
             </div>
           ) : (
