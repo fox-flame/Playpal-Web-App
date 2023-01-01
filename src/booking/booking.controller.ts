@@ -14,6 +14,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { MyBookingsDTO } from './dto/myBookings-dto';
 import { SlotDTO } from './dto/slot-dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
+import { UpdateTimeDTO } from './dto/updateTime-dto';
 
 @Controller('booking')
 export class BookingController {
@@ -24,6 +25,13 @@ export class BookingController {
     @Body() createBookingDto: CreateBookingDto,
   ): Promise<any> {
     return await this.bookingService.create(createBookingDto);
+  }
+
+  @Patch('update-time')
+  async updateStartEndTime(
+    @Body() updateTimeDto: UpdateTimeDTO,
+  ): Promise<any> {
+    return await this.bookingService.updateGroundTime(updateTimeDto);
   }
 
   @Post('book')
@@ -44,6 +52,11 @@ export class BookingController {
   async isSlot(@Param('id') id: string): Promise<Boolean> {
     return await this.bookingService.findOne(id);
   }
+
+  @Get('ground-slots/:id')
+  async getGroundSlots(@Param('id') id: string): Promise<any>{
+    return await this.bookingService.getGroundSlots(id);
+  }  
 
   @Get('slots')
   async findAvailableSlots(@Query() slotsDTO: SlotDTO): Promise<any> {

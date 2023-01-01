@@ -31,7 +31,7 @@ export class TeamService {
               sportWePlay: teamSports,
               underAge: underAge,
               members: {
-                playerID: 'admin',
+                [`${playerID}`]: 'admin',
               },
             },
           },

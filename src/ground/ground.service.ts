@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import e, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { GroundDTO } from './dto/ground.dto';
 import { UpdateGroundDto } from './dto/update-ground.dto';
 import * as admin from 'firebase-admin';
@@ -11,10 +11,10 @@ import axios from 'axios';
 export class GroundService {
   async createGround(groundDTO: GroundDTO): Promise<any> {
     const db = admin.firestore();
-    const { sports, city, ownerID } = groundDTO;
+    const { sports, city, ownerID, mapAddress } = groundDTO;
     try {
       const groundID = uuid();
-      const coordinates = await this.getLatLong(groundDTO.mapAddress);
+      const coordinates = await this.getLatLong(mapAddress);
       await db.doc(`grounds/${sports}`).set(
         {
           [city]: {
@@ -47,15 +47,15 @@ export class GroundService {
     try {
       var lat = 0.0,
         lon = 0.0;
-      if (Object.values(mapUrl)[0].split('/')[2] === 'www.google.com') {
-        var url = Object.values(mapUrl)[0].split('@');
+      if (mapUrl.split('/')[2] === 'www.google.com') {
+        var url = mapUrl.split('@');
         var at = url[1].split('z');
         var zero = at[0].split(',');
         lat = parseFloat(zero[0]);
         lon = parseFloat(zero[1]);
-      } else if (Object.values(mapUrl)[0].split('/')[2] === 'goo.gl') {
+      } else if (mapUrl.split('/')[2] === 'goo.gl') {
         //  console.log(Object.values(mapUrl)[0]);
-        await axios.get(Object.values(mapUrl)[0]).then((response) => {
+        await axios.get(mapUrl).then((response) => {
           console.log(response.request.path);
           var ll = response.request.path.split('/')[3].split(',');
           lat = parseFloat(ll[0]);
@@ -75,51 +75,32 @@ export class GroundService {
   async groundsAndOwner(req: Request, res: Response): Promise<any> {
     const db = admin.firestore();
     var groundsList = {};
-    var arr = [];
-    var bookableGrounds = [];
     const groundsRef = db.collection('grounds');
 
     try {
-      //checking if grounds started booking, getting their ids
-      await db
-        .collection('bookings')
-        .doc('6idYckzA4ZSAPld1hWsi')
-        .get()
-        .then((snapshot) => {
-          bookableGrounds = Object.keys(snapshot.data());
-        });
-
-      await groundsRef.get().then((snapshot) => {
+      groundsRef.get().then((snapshot) => {
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         /////////////////////This will get every ground of every location////////////////////////////////////////
-        ////////////////// BUT only fetching bookable grounds //////////////////////////
-        data.map(
-          (
-            ground, //return cities names
-          ) =>
-            Object.keys(ground)
-              .filter((value) => value !== 'id')
-              .map((cityName) => {
-                let keys = Object.keys(ground[cityName]);
-                //check if keys matches with bookable grounds
-                keys.forEach((gid) => {
-                  bookableGrounds.forEach((bid) => {
-                    if (gid === bid) {
-                      console.log('matches');
-                      // keys.map((key) => {
-                      ground[cityName][gid]['sports'] = ground.id;
-                      ground[cityName][gid]['city'] = cityName;
-                      // });
-                      arr.push({ [gid]: ground[cityName][gid] });
-                    }
+        const arr = data
+          .map(
+            (
+              ground, //return cities names
+            ) =>
+              Object.keys(ground)
+                .filter((value) => value !== 'id')
+                .map((cityName) => {
+                  let keys = Object.keys(ground[cityName]);
+                  keys.map((key) => {
+                    ground[cityName][key]['sports'] = ground.id;
+                    ground[cityName][key]['city'] = cityName;
                   });
-                });
-              }),
-        );
-        console.log(arr);
+                  return ground[cityName];
+                }),
+          )
+          .flat(); //flat merges nested arrays into single array
         //  console.log(Object.keys(arr[0])[0]);
         for (let i = 0; i < arr.length; i++) {
           for (const key in arr[i]) {
@@ -145,6 +126,7 @@ export class GroundService {
                 }
               }
             }
+            console.log(tempObj);
             return res.status(200).json(tempObj);
           });
       });
@@ -282,7 +264,8 @@ export class GroundService {
       const obj = {
         [paramsString]: true,
       };
-      db.doc(`grounds/${type}`)
+      db.collection('grounds')
+        .doc(type)
         .update(obj)
         .then(() => {
           return JSON.stringify('{verified:true}');

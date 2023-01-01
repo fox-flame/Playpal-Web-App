@@ -20,7 +20,7 @@ export class UploadImageController {
   constructor(private readonly uploadImageService: UploadImageService) {}
 
   @Post()
-  @UseInterceptors(FilesInterceptor('grounds[]', 3))
+  @UseInterceptors(FilesInterceptor('grounds[]', 10))
   async upload(@UploadedFiles() files, @Body() uploadDTO: uploadDTO) {
     return await this.uploadImageService.uploadMultiImg(files, uploadDTO);
   }

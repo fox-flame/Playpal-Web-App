@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { SlotDTO } from './dto/slot-dto';
 import { MyBookingsDTO } from './dto/myBookings-dto';
 import { GroundService } from 'src/ground/ground.service';
+import { UpdateTimeDTO } from './dto/updateTime-dto';
 @Injectable()
 export class BookingService {
   constructor(
@@ -43,6 +44,26 @@ export class BookingService {
         .then((res) => JSON.stringify('{isCreated:true}'));
     } catch (error) {}
   }
+  /**
+   *
+   * @param updateTimeDto update opening and closing time of ground
+   */
+
+  async updateGroundTime(updateTimeDto: UpdateTimeDTO): Promise<any> {
+    try {
+      const db = admin.firestore();
+      const { city, closeAt, openAt, sports, groundID } = updateTimeDto;
+      db.collection('grounds')
+        .doc(sports)
+        .update({
+          [`${city}.${groundID}.openAt`]: openAt,
+          [`${city}.${groundID}.closeAt`]: closeAt,
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   /**
    *
    * @param bookGroundDto
@@ -365,6 +386,33 @@ Book a ground
       return availableSlots.flat();
     } catch (error) {
       console.log('Error booking slots ', error);
+    }
+  }
+
+  async getGroundSlots(id: string): Promise<any> {
+    try {
+      const db = admin.firestore();
+      let slots = {};
+      await db
+        .collection('bookings')
+        .doc('6idYckzA4ZSAPld1hWsi')
+        .get()
+        .then((slotList) => {
+          for (const [key, value] of Object.entries(slotList.data())) {
+            if (key === id) {
+              for (const [key2, value2] of Object.entries(value)) {
+                if (key2 === 'slots') {
+                  console.log(value2);
+                  Object.assign(slots, value2);
+                  break;
+                }
+              }
+            }
+          }
+        });
+      return slots;
+    } catch (error) {
+      console.log(error);
     }
   }
 

@@ -5,9 +5,7 @@ export class uploadDTO {
   @IsNotEmpty()
   userID!: string;
 
-  @IsString()
   DOB?: string;
 
-  @IsString()
   experience?: string;
 }
